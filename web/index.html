@@ -1,0 +1,79 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta content="text/html; charset=ISO-8859-1"
+ http-equiv="content-type">
+  <title>Ocaml Benchmark module</title>
+  <meta content="Christophe Troestler" name="author">
+  <meta content="Module to benchmark running times of code"
+ name="description">
+</head>
+<body alink="#ff6600" vlink="#999999" link="#f0b75f"
+ style="color: rgb(0, 0, 0); background-color: rgb(255, 255, 255);">
+<br>
+<table style="text-align: left; width: 100%;" border="0" cellspacing="2"
+ cellpadding="2">
+  <tbody>
+    <tr>
+      <td colspan="2" rowspan="1"
+ style="vertical-align: top; width: 18%; background-color: rgb(255, 255, 255); text-align: center; white-space: nowrap;"><img
+ style="width: 759px; height: 154px;" alt="OCaml Benchmark"
+ src="file:///home/trch/Numeric/OCaml/benchmark/web/OCamlBenchmark.jpg"><br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top; width: 20px;"><a
+ href="http://ocaml-benchmark.sourceforge.net/"><img
+ style="border: 0px solid ; width: 84px; height: 46px;" alt="Home"
+ src="Home.jpg"></a><br>
+      <a href="doc/index.html"><img
+ style="border: 0px solid ; width: 190px; height: 46px;"
+ alt="Documentation" src="Documentation.jpg"></a><br>
+      <span style="font-family: helvetica,arial,sans-serif;"><a
+ href="http://sourceforge.net/project/showfiles.php?group_id=117069"><img
+ style="border: 0px solid ; width: 129px; height: 46px;" alt="Download"
+ src="Download.jpg"></a><br>
+      <a href="LICENSE"><img
+ style="border: 0px solid ; width: 101px; height: 46px;" alt="License"
+ src="License.jpg"></a></span></td>
+      <td style="vertical-align: top;">Ocaml Benchmark is a small
+module to benchmark running times of code.&nbsp; A typical use looks
+like:<br>
+      <br>
+      <code class="code">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span
+ style="color: rgb(255, 0, 0); font-weight: bold;" class="keyword">open</span>&nbsp;<span
+ style="color: rgb(51, 102, 255);" class="constructor">Benchmark</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span
+ style="color: rgb(255, 0, 0); font-weight: bold;" class="keyword">let</span>&nbsp;res&nbsp;=&nbsp;throughputN&nbsp;8&nbsp;[(<span
+ style="color: rgb(204, 102, 0);" class="string">"foo"</span>,&nbsp;f,&nbsp;1000000);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span
+ style="color: rgb(204, 102, 0);" class="string">"bar"</span>, g,
+1000000);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span
+ style="color: rgb(204, 102, 0);" class="string">"baz"</span>, h,
+1000000) ]&nbsp;<span style="color: rgb(255, 0, 0); font-weight: bold;"
+ class="keyword">in</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;print_newline();<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;tabulate&nbsp;res<br>
+      <br>
+      </code>For a complete description of the functions, see the
+interface <a href="doc/Benchmark.html"><span
+ style="font-family: courier new,courier,monospace;">Benchmark.mli</span></a>.<br>
+      <br>
+You can download a tarball <a
+ href="http://sourceforge.net/project/showfiles.php?group_id=117069">here</a>.&nbsp;
+If you have questions, suggestions, bugs,... you can contact me by
+email: <a
+ href="mailto:chris_77@users.sourceforge.net?SUBJECT=OCaml%20Benchmark">chris_77@users.sourceforge.net</a><br>
+      <br>
+The code is released under the GNU Lesser General Public License (LGPL)
+with the same special
+exception as for the OCaml standard library (see the file <a
+ href="LICENSE">LICENSE</a> for more details).</td>
+    </tr>
+  </tbody>
+</table>
+<br>
+<br>
+</body>
+</html>
