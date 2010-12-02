@@ -17,7 +17,7 @@
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the file
    LICENSE for more details.
 *)
-(* 	$Id: benchmark.mli,v 1.2 2004-08-20 13:08:07 chris_77 Exp $	 *)
+(* 	$Id: benchmark.mli,v 1.3 2004-08-20 18:11:05 chris_77 Exp $	 *)
 (** This module implements benchmarking functions for measuring the
   run-time of one or many functions using latency (multiple
   repetitions) or throughput (repeat until some time period has
@@ -172,7 +172,7 @@ val throughputN :
     resulting list which can be passed to {!Benchmark.tabulate} if you
     want a comparison table. *)
 
-val tabulate : ?no_parent:bool -> ?percent:float -> samples -> unit
+val tabulate : ?no_parent:bool -> ?confidence:float -> samples -> unit
  (** [Benchmark.tablulate results] prints a comparison table for a
    list of [results] obtained by {!Benchmark.latencyN} or
    {!Benchmark.throughputN} with each function compared to all the

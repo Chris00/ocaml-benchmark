@@ -19,7 +19,7 @@
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the file
    LICENSE for more details.
  *)
-(* $Id: benchmark.ml,v 1.5 2004-08-20 17:19:49 chris_77 Exp $ *)
+(* $Id: benchmark.ml,v 1.6 2004-08-20 18:11:05 chris_77 Exp $ *)
 
 open Printf
 
@@ -255,6 +255,8 @@ let list_iteri f =
     | a::l -> let () = f i a in loop (i + 1) l in
   loop 0
 
+let is_nan x = (classify_float x = FP_nan)
+
 
 (* [log_gamma x] computes the logarithm of the Gamma function at [x]
    using Lanczos method.  It is assumed [x > 0.].
@@ -279,11 +281,12 @@ let log_gamma =
     if i > 0 then sum (i - 1) (den -. 1.) (s +. c.(i) /. den)
     else c.(0) +. s in
   fun x ->
+    assert(x > 0.);
     let xg = x +. g in
     let xg_5 = xg -. 0.5 in
     log(sqrt2pi *. sum c_last xg 0.) +. (x -. 0.5) *. log xg_5 -. xg_5
 
-(* Beta function *)
+(* Beta function.  It is assumed [a > 0. && b > 0.]. *)
 let beta a b =
   exp(log_gamma a +. log_gamma b -. log_gamma(a +. b))
 
@@ -333,6 +336,7 @@ let betai_cf x a b =
   lentz 1. 1. d2 d2
 
 let betai x a b =
+  assert(a > 0. && b > 0.);
   if x < 0. || x > 1. then invalid_arg "betai";
   if x = 0. then 0.
   else if x = 1. then 1.
@@ -378,33 +382,28 @@ let comp_rates cpu (name, bm) =
   | b :: tl -> loop 1 ((float b.iters) /. (cpu b +. 1e-15)) 0. tl
 
 (* Compare rates *)
-let cmp_rates (_,_,r1,_) (_,_,r2,_) = compare (r1:float) r2
+let by_rates (_,_,r1,_) (_,_,r2,_) = compare (r1:float) r2
 
-let is_nan x = (classify_float x = FP_nan)
+(* Check whether two rates are significantly different. *)
+let different_rates significance  n1 r1 s1  n2 r2 s2 =
+  assert(n1 > 0 && n2 > 0);
+  if n1 = 1 && n2 = 1 then true (* no info about distribution *)
+  else
+    let df = float(n1 + n2 - 2) (* >= 1. *)
+    and n1 = float n1
+    and n2 = float n2 in
+    let sD = sqrt((s1 +. s2) /. df *. (1. /. n1 +. 1. /. n2)) in
+    let t = (r1 -. r2) /. sD in
+    cpl_student_t t df <= significance
 
-(* print results of a bench_many run *)
-(* results = [(name, bm); (name, bm); (name, bm); ...] *)
-(* Perl: cmpthese *)
-let tabulate ?(no_parent=false) ?(percent=1.) results =
-  let len = List.length results in
-  if len = 0 then invalid_arg "Benchmark.tabulate";
-  (* Compute (name, rate, sigma) for all results and sort them by rates *)
-  let cpu = if no_parent then cpu_c else cpu_p in
-  let rates = List.sort cmp_rates (List.map (comp_rates cpu) results) in
-  (* Decide whether to display by rates or seconds *)
-  let display_as_rate =
-    let (_,_,r,_) = List.nth rates (len / 2) in r > 1. in
-  (*
-   * Compute rows
-   *)
-  let top_row = "" :: (if display_as_rate then " Rate" else " s/iter") ::
-                "" :: (List.map (fun (s,_,_,_) -> " " ^ s) rates) in
-  (* Initialize the widths of the columns from the top row *)
-  let col_width = Array.of_list (List.map String.length top_row) in
-  (* Build all the data [rows] -- starting with separation space *)
+
+(* [string_of_rate display_as_rate r s] *)
+let string_of_rate display_as_rate =
   let per_sec = if display_as_rate then "/s" else "" in
-  let string_of_rate r sigma =
-    let err = percent *. sigma in
+  fun confidence n r s ->
+    (* Assume Gaussian distribution *)
+    let sigma = sqrt(s/. float n) in
+    let err = confidence *. sigma (* FIXME *) in
     let a, err =
       if display_as_rate then r, err else
         let n = 1. /. r in (n, n *. n *. err) (* Taylor of order 1 of 1/r *) in
@@ -416,19 +415,46 @@ let tabulate ?(no_parent=false) ?(percent=1.) results =
     else if a >= 1.  then p 2
     else if a >= 0.1 then p 3
     else if sigma < 1e-15 then (sprintf " %g%s" a per_sec, "")
-    else (sprintf " %g+-" a, sprintf "%g%s" err per_sec) in
-  let make_row i (row_name, row_n, row_rate, row_sigma) =
+    else (sprintf " %g+-" a, sprintf "%g%s" err per_sec)
+
+
+(* print results of a bench_many run *)
+(* results = [(name, bm); (name, bm); (name, bm); ...] *)
+(* Perl: cmpthese *)
+let tabulate ?(no_parent=false) ?(confidence=0.95) results =
+  let len = List.length results in
+  if len = 0 then invalid_arg "Benchmark.tabulate";
+  (* Compute (name, rate, sigma) for all results and sort them by rates *)
+  let cpu = if no_parent then cpu_c else cpu_p in
+  let rates = List.sort by_rates (List.map (comp_rates cpu) results) in
+  (* Decide whether to display by rates or seconds *)
+  let display_as_rate =
+    let (_,_,r,_) = List.nth rates (len / 2) in r > 1. in
+  (*
+   * Compute rows
+   *)
+  let top_row = "" :: (if display_as_rate then " Rate" else " s/iter") ::
+                  "" :: (List.map (fun (s,_,_,_) -> " " ^ s) rates) in
+  (* Initialize the widths of the columns from the top row *)
+  let col_width = Array.of_list (List.map String.length top_row) in
+  (* Build all the data [rows], each starting with separation space *)
+  let make_row i (row_name, row_n, row_rate, row_s) =
     (* Column 0: test name *)
     col_width.(0) <- max (String.length row_name) col_width.(0);
     (* Column 1 & 2: performance *)
-    let ra, ra_err = string_of_rate row_rate row_sigma in
+    let ra, ra_err =
+      string_of_rate display_as_rate confidence row_n row_rate row_s in
     col_width.(1) <- max (String.length ra) col_width.(1);
     col_width.(2) <- max (String.length ra_err) col_width.(2);
     (* Columns 3..(len + 2): performance ratios *)
-    let make_col j (col_name, col_n, col_rate, col_sigma) =
+    let make_col j (col_name, col_n, col_rate, col_s) =
       let ratio =
-        if i = j || is_nan row_rate || is_nan col_rate then "--"
-        else sprintf " %.0f%%" (100. *. row_rate /. col_rate -. 100.) in
+        if i = j || is_nan row_rate || is_nan col_rate then "--" else
+          let p = 100. *. row_rate /. col_rate -. 100. in
+          if different_rates (1. -. confidence)
+            row_n row_rate row_s  col_n col_rate col_s
+          then sprintf " %.0f%%" p
+          else sprintf " [%.0f%%]" p in
       col_width.(j + 3) <- max (String.length ratio) col_width.(j + 3);
       ratio in
     row_name :: ra :: ra_err :: (list_mapi make_col rates) in
