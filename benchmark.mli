@@ -17,7 +17,7 @@
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the file
    LICENSE for more details.
 *)
-(* 	$Id: benchmark.mli,v 1.3 2004-08-20 18:11:05 chris_77 Exp $	 *)
+(* 	$Id: benchmark.mli,v 1.4 2004-08-20 21:08:25 chris_77 Exp $	 *)
 (** This module implements benchmarking functions for measuring the
   run-time of one or many functions using latency (multiple
   repetitions) or throughput (repeat until some time period has
@@ -185,7 +185,12 @@ val tabulate : ?no_parent:bool -> ?confidence:float -> samples -> unit
 
    where name1, name2,... are the labels of the tests sorted from
    slowest to fastest and rij is (ri - rj) expressed in percents of rj
-   where ri and rj are the rates of namei and namej respectively. *)
+   where ri and rj are the rates of namei and namej respectively.
+
+   @param no_parent if [true], only take in account the times of the
+   children (default: [false])
+
+   @param confidence (default: 0.95) *)
 
 
 (**/**)
@@ -195,11 +200,11 @@ val latency : ?repeat:int -> int -> ('a -> 'b) -> 'a -> t list
     time needed by the function [f] to run with input [x] for [n]
     iterations.  It returns the list of such measures.
 
-    @param ?repeat number of measures (default: [1]) *)
+    @param repeat number of measures (default: [1]) *)
 
 val throughput : ?repeat:int -> float -> ('a -> 'b) -> 'a -> t list
   (** [Benchmark.throughput ?repeat tmax f x] measures [repeat] times
     the throughput of the function [f] with input [x] running for at
     least [tmax] seconds.  It returns the list of such measures.
 
-    @param ?repeat number of measures (default: [1]) *)
+    @param repeat number of measures (default: [1]) *)
