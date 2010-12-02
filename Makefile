@@ -1,17 +1,18 @@
-# $Id: Makefile,v 1.1.1.1 2004-08-18 21:29:29 chris_77 Exp $
+# $Id: Makefile,v 1.2 2004-08-20 18:26:19 chris_77 Exp $
 
-PKGNAME	   = $(shell grep name META | sed -e "s/.*\"\([^\"]*\)\".*/\1/")
-PKGVERSION = $(shell grep version META | sed -e "s/.*\"\([^\"]*\)\".*/\1/")
+PKGNAME	   = $(shell grep "name" META | sed -e "s/.*\"\([^\"]*\)\".*/\1/")
+PKGVERSION = $(shell grep "version" META | sed -e "s/.*\"\([^\"]*\)\".*/\1/")
 
 BYTE_OBJS    :=
 OPT_OBJS     :=
 REQUIRES     := 
 PREDICATES   :=
 
-OCAMLC       := ocamlfind ocamlc
-OCAMLOPT     := ocamlfind ocamlopt
-OCAMLDEP     := ocamlfind ocamldep
+OCAMLC       := ocamlc
+OCAMLOPT     := ocamlopt
+OCAMLDEP     := ocamldep
 OCAMLDOC     := ocamldoc
+OCAMLFIND    := ocamlfind
 
 DISTFILES    := INSTALL LICENSE META Makefile README \
 		$(wildcard *.ml) $(wildcard *.mli) $(wildcard examples/)
@@ -33,16 +34,12 @@ OPT_OBJS  := $(if $(ML_FILES),$(PKGNAME).cmx $(OPT_OBJS),)
 DOCFILES  += $(ML_FILES) $(MLI_FILES)
 PUBFILES  += $(DOCFILES) README
 
-
 ARCHIVE   := $(if $(ML_FILES),$(PKGNAME).cma,)
 XARCHIVE  := $(if $(ML_FILES),$(PKGNAME).cmxa,)
 
-PKGS := $(shell grep 'requires' META|sed 's/requires[ 	]*=[ 	]*//')
-PACKAGE_OPTS    := $(if $(PKGS),-package $(PKGS),)
-SYNTAX_OPTS     := $(if $(SYNTAX),-syntax $(SYNTAX),)
-PP_OPTS         := $(if $(PPOPT),-ppopt $(PPOPT),)
-PREDICATE_OPTS  := $(if $(PREDICATES),-predicates $(PREDICATES),)
-OCAML_STDLIB    := $(shell ocamlfind printconf stdlib)
+PKGS = $(shell grep "requires" META | sed -e "s/.*\"\([^\"]*\)\".*/\1/")
+PKGS_CMA 	= $(addsuffix .cma, $(PKGS))
+OCAML_STDLIB 	= $(shell ocamlc -where)
 
 export OCAMLPATH = ..
 
@@ -61,17 +58,17 @@ $(XARCHIVE): $(OPT_OBJS)
 .SUFFIXES: .cmo .cmi .cmx .ml .mli
 
 %.mli.tmp: %.ml
-	$(OCAMLC) $(PACKAGE_OPTS) $(PREDICATE_OPTS) $(SYNTAX_OPTS) -c $< -i > $@
+	$(OCAMLC) $(PKGS_CMA) -c $< -i > $@
 	@[ -s $@ ] || rm -f $@
 
 %.cmo: %.ml
-	$(OCAMLC) $(PACKAGE_OPTS) $(PREDICATE_OPTS) $(SYNTAX_OPTS) -c $<
+	$(OCAMLC) $(PKGS_CMA) -c $<
 
 %.cmi: %.mli
-	$(OCAMLC) $(PACKAGE_OPTS) $(PREDICATE_OPTS) $(SYNTAX_OPTS) -c $<
+	$(OCAMLC) $(PKGS_CMA) -c $<
 
 %.cmx: %.ml
-	$(OCAMLOPT) $(PACKAGE_OPTS) $(PREDICATE_OPTS) $(SYNTAX_OPTS) -c $<
+	$(OCAMLOPT) $(PKGS_CMA:.cma=.cmxa) -c $<
 
 %.o: %.c
 	$(CC) -c -I. -I$(OCAML_STDLIB)/caml $<
