@@ -2,7 +2,7 @@
    For comparing runtime of functions
    *********************************************************************
 
-   Modified in Aug. 2004 by Troestler Christophe
+   Copyright 2004 by Troestler Christophe
    Christophe.Troestler(at)umh.ac.be
 
    Copyright 2002-2003, Doug Bagley
@@ -19,7 +19,7 @@
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the file
    LICENSE for more details.
  *)
-(* $Id: benchmark.ml,v 1.6 2004-08-20 18:11:05 chris_77 Exp $ *)
+(* $Id: benchmark.ml,v 1.7 2004-08-25 11:43:47 chris_77 Exp $ *)
 
 open Printf
 
@@ -161,11 +161,12 @@ let throughput ?(repeat=1) tmax f x =
         if new_tn > 1.2 *. tn then new_n
         else truncate(1.1 *. float n) + 1 in
       estimate_niter nmin n new_tn in
-  (* Determine the minimum number of iterations to run > 0.1 sec *)
+  (* Determine the minimum number of iterations to run >= 0.1 sec
+     (whatever [tmax]). *)
   let rec min_iter n =
     let bm = timeit n f x in
     let tn = cpu_p bm in
-    if tn <= 0.1 then min_iter(2 * n)
+    if tn < 0.1 then min_iter(2 * n)
     else if tn < tmax then estimate_niter n n tn (* tn > 0.1 *)
     else (* minimal [n] good for [tmax] *)
       repeat_test (repeat - 1) [bm] n n in
@@ -181,8 +182,8 @@ let print1 ?(min_count=4) ?(min_cpu=0.4) ?(style=Auto) ?fwidth ?fdigits
   if style <> Nil then begin
     let print_t prefix b =
       printf "%10s: %s\n" prefix (to_string ~style ?fwidth ?fdigits b);
-      if b.iters < min_count || (b.wall < 1. && b.iters < 1000)
-        || cpu_a b < min_cpu
+      if b.iters < min_count || cpu_a b < min_cpu
+        || (b.wall < 1. && b.iters < 1000)
       then print_string
         "            (warning: too few iterations for a reliable count)\n" in
     begin match bm with
@@ -211,20 +212,20 @@ let testN ~title ~test default_f_name
   List.map result_of funs
 
 
-let latencyN ?min_count ?min_cpu ?style ?fwidth ?fdigits ?(repeat=1) n funs =
+let latencyN ?min_cpu ?style ?fwidth ?fdigits ?(repeat=1) n funs =
+  if n < 4 then invalid_arg "Benchmark.latencyN";
   let title s =
     sprintf "Latencies for %d iterations of %s%s:" n s
       (if repeat > 1 then sprintf " (%i runs)" repeat else "") in
   testN ~title ~test:(latency ~repeat n)
-    (sprintf "[run %d times]" n)
-    ?min_count ?min_cpu ?style ?fwidth ?fdigits funs
+    (sprintf "[run %d times]" n) ?min_cpu ?style ?fwidth ?fdigits funs
 
-let latency1 ?min_count ?min_cpu ?(name="") ?style ?fwidth ?fdigits
-  ?repeat  n f x =
-  latencyN ?min_count ?min_cpu ?style ?fwidth ?fdigits ?repeat n [(name, f, x)]
+let latency1 ?min_cpu ?style ?fwidth ?fdigits ?repeat  n ?(name="") f x =
+  if n < 4 then invalid_arg "Benchmark.latency1";
+  latencyN ?min_cpu ?style ?fwidth ?fdigits ?repeat n [(name, f, x)]
 
-let throughputN ?min_count ?min_cpu ?style ?fwidth ?fdigits ?(repeat=1)
-  n funs =
+
+let throughputN ?min_count ?style ?fwidth ?fdigits ?(repeat=1) n funs =
   let tmax = if n <= 0 then 3. (* default num of sec *) else float n in
   let title s =
     sprintf "Throughputs for %s%s running%s for at least %g CPU seconds:"
@@ -233,12 +234,10 @@ let throughputN ?min_count ?min_cpu ?style ?fwidth ?fdigits ?(repeat=1)
       tmax in
   testN ~title ~test:(throughput ~repeat tmax)
     (sprintf "[run > %3.1g secs]" tmax)
-    ?min_count ?min_cpu ?style ?fwidth ?fdigits funs
+    ?min_count ?style ?fwidth ?fdigits funs
 
-let throughput1 ?min_count ?min_cpu ?(name="") ?style ?fwidth ?fdigits
-  ?repeat n f x =
-  throughputN ?min_count ?min_cpu ?style ?fwidth ?fdigits ?repeat
-    n [(name, f, x)]
+let throughput1 ?min_count ?style ?fwidth ?fdigits ?repeat n ?(name="") f x =
+  throughputN ?min_count ?style ?fwidth ?fdigits ?repeat n [(name, f, x)]
 
 
 
@@ -288,6 +287,7 @@ let log_gamma =
 
 (* Beta function.  It is assumed [a > 0. && b > 0.]. *)
 let beta a b =
+  assert(a > 0. && b > 0.);
   exp(log_gamma a +. log_gamma b -. log_gamma(a +. b))
 
 (* [betai x a b] returns the value of the incomplete Beta function
@@ -322,7 +322,7 @@ let betai_cf x a b =
     let d = 1. /. max_tiny(1. +. cf_d2m *. d)
     and c = max_tiny(1. +. cf_d2m /. c) in
     let f = f *. d *. c in
-    (* Odd red step d_2m+1 *)
+    (* Odd rec step d_2m+1 *)
     let cf_d2m1 = -. (a +. m) *. (apb +. m) *. x
                   /. ((a +. m2) *. (ap1 +. m2)) in
     let d = 1. /. max_tiny(1. +. cf_d2m1 *. d)
@@ -348,8 +348,8 @@ let betai x a b =
     else 1. -. m *. betai_cf (1. -. x) b a /. b
 
 (* [cpl_student_t t nu] compute the "complement" of the Student's
-   distribution: 1 - A(t|nu).  It tells is used to compute the
-   significance of probabilitic tests. *)
+   distribution: 1 - A(t|nu).  It is used to compute the significance
+   of probabilistic tests. *)
 let cpl_student_t t nu =
   betai (nu /. (nu +. t *. t)) (0.5 *. nu) 0.5
 
@@ -365,21 +365,21 @@ let cpl_student_t t nu =
 
    m(k) = sum(x(i) : 1 <= i <= k) / k
    s(k) = sum(x(i)**2 : 1 <= i <= k) - k m(k)**2
-   = sum( (x(i) - m(k))**2 : 1 <= i <= k)
+        = sum( (x(i) - m(k))**2 : 1 <= i <= k)
 
    Cf. Knuth, Seminumerical algorithms. *)
 let comp_rates cpu (name, bm) =
   let rec loop n m s = function
     | [] -> (name, n, m, s)
     | b :: tl ->
-        let rate = (float b.iters) /. (cpu b +. 1e-15) in
+        let rate = float b.iters /. (cpu b +. 1e-15) in
         let n' = n + 1 in
         let m' = m +. (rate -. m) /. (float n') in
         let s' = s +. (rate -. m) *. (rate -. m') in
         loop n' m' s' tl in
   match bm with
   | [] -> (name, 0, nan, 0.) (* NaN used for no-data *)
-  | b :: tl -> loop 1 ((float b.iters) /. (cpu b +. 1e-15)) 0. tl
+  | b :: tl -> loop 1 (float b.iters /. (cpu b +. 1e-15)) 0. tl
 
 (* Compare rates *)
 let by_rates (_,_,r1,_) (_,_,r2,_) = compare (r1:float) r2
@@ -387,7 +387,8 @@ let by_rates (_,_,r1,_) (_,_,r2,_) = compare (r1:float) r2
 (* Check whether two rates are significantly different. *)
 let different_rates significance  n1 r1 s1  n2 r2 s2 =
   assert(n1 > 0 && n2 > 0);
-  if n1 = 1 && n2 = 1 then true (* no info about distribution *)
+  if n1 = 1 && n2 = 1 then true (* no info about distribution, assume
+                                   they really are. *)
   else
     let df = float(n1 + n2 - 2) (* >= 1. *)
     and n1 = float n1
@@ -422,6 +423,8 @@ let string_of_rate display_as_rate =
 (* results = [(name, bm); (name, bm); (name, bm); ...] *)
 (* Perl: cmpthese *)
 let tabulate ?(no_parent=false) ?(confidence=0.95) results =
+  if confidence < 0. || confidence > 1. then
+    invalid_arg "Benchmark.tabulate";
   let len = List.length results in
   if len = 0 then invalid_arg "Benchmark.tabulate";
   (* Compute (name, rate, sigma) for all results and sort them by rates *)
@@ -438,12 +441,12 @@ let tabulate ?(no_parent=false) ?(confidence=0.95) results =
   (* Initialize the widths of the columns from the top row *)
   let col_width = Array.of_list (List.map String.length top_row) in
   (* Build all the data [rows], each starting with separation space *)
+  let string_of_rate = string_of_rate display_as_rate in
   let make_row i (row_name, row_n, row_rate, row_s) =
     (* Column 0: test name *)
     col_width.(0) <- max (String.length row_name) col_width.(0);
     (* Column 1 & 2: performance *)
-    let ra, ra_err =
-      string_of_rate display_as_rate confidence row_n row_rate row_s in
+    let ra, ra_err = string_of_rate confidence row_n row_rate row_s in
     col_width.(1) <- max (String.length ra) col_width.(1);
     col_width.(2) <- max (String.length ra_err) col_width.(2);
     (* Columns 3..(len + 2): performance ratios *)
@@ -451,7 +454,7 @@ let tabulate ?(no_parent=false) ?(confidence=0.95) results =
       let ratio =
         if i = j || is_nan row_rate || is_nan col_rate then "--" else
           let p = 100. *. row_rate /. col_rate -. 100. in
-          if different_rates (1. -. confidence)
+          if p = 0 || different_rates (1. -. confidence)
             row_n row_rate row_s  col_n col_rate col_s
           then sprintf " %.0f%%" p
           else sprintf " [%.0f%%]" p in
@@ -461,7 +464,7 @@ let tabulate ?(no_parent=false) ?(confidence=0.95) results =
   let rows = list_mapi make_row rates in
   (*
    * Equalize column widths in the chart as much as possible without
-   * exceeding 80 characters.  This does not use or affect cols 0 or 1.
+   * exceeding 80 characters.  This does not use or affect cols 0, 1 and 2.
    *)
   (* Build an array of indexes [nth.(0..(len-1))] to access
      [col_width.(3..(len+2))] in nondecreasing order. *)
