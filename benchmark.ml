@@ -19,7 +19,7 @@
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the file
    LICENSE for more details.
  *)
-(* $Id: benchmark.ml,v 1.4 2004-08-20 13:45:48 chris_77 Exp $ *)
+(* $Id: benchmark.ml,v 1.5 2004-08-20 17:19:49 chris_77 Exp $ *)
 
 open Printf
 
@@ -287,9 +287,67 @@ let log_gamma =
 let beta a b =
   exp(log_gamma a +. log_gamma b -. log_gamma(a +. b))
 
-(* Incomplete Beta function. *)
+(* [betai x a b] returns the value of the incomplete Beta function
+   I_x(a,b).  It is evaluated through the continued fraction expansion
+   (see e.g. Numerical Recipies, 6.4):
 
+              x^a (1-x)^b [  1  d1  d2     ]
+   I_x(a,b) = ----------- [ --  --  -- ... ]
+               a  B(a,b)  [ 1+  1+  1+     ]
 
+   where B(a,b) is the beta function and
+
+               m (b-m) x                       - (a + m)(a + b + m) x
+   d_2m = --------------------      d_(2m+1) = ----------------------
+          (a + 2m - 1)(a + 2m)                  (a + 2m)(a + 2m + 1)
+
+   The modified Lentz's method is used for the continued fraction (see
+   NR, section 5.2) in routine [betai_cf].
+*)
+let max_tiny x = max 1e-30 x (* to avoid null divisors *)
+
+let betai_cf_eps = epsilon_float
+
+let betai_cf x a b =
+  let apb = a +. b
+  and ap1 = a +. 1.
+  and am1 = a -. 1. in
+  let rec lentz m c d f =
+    let m2 = 2. *. m in
+    (* Even rec step d_2m *)
+    let cf_d2m = m *. (b -. m) *. x /. ((am1 +. m2) *. (a +. m2)) in
+    let d = 1. /. max_tiny(1. +. cf_d2m *. d)
+    and c = max_tiny(1. +. cf_d2m /. c) in
+    let f = f *. d *. c in
+    (* Odd red step d_2m+1 *)
+    let cf_d2m1 = -. (a +. m) *. (apb +. m) *. x
+                  /. ((a +. m2) *. (ap1 +. m2)) in
+    let d = 1. /. max_tiny(1. +. cf_d2m1 *. d)
+    and c = max_tiny(1. +. cf_d2m1 /. c) in
+    let delta = c *. d in
+    let f = f *. delta in
+    if abs_float(delta -. 1.) < betai_cf_eps then f
+    else lentz (m +. 1.) c d f in
+  (* Initialize Lentz's method with C2=1, D2 (step 2) *)
+  let d2 = 1. /. max_tiny(1. -. apb *. x /. ap1) in
+  lentz 1. 1. d2 d2
+
+let betai x a b =
+  if x < 0. || x > 1. then invalid_arg "betai";
+  if x = 0. then 0.
+  else if x = 1. then 1.
+  else
+    let m = exp(log_gamma(a +. b) -. log_gamma a -. log_gamma b
+                +. a *. log x +. b *. log(1. -. x)) in
+    if x < (a +. 1.) /. (a +. b +. 2.)
+    then m *. betai_cf x a b /. a
+    else 1. -. m *. betai_cf (1. -. x) b a /. b
+
+(* [cpl_student_t t nu] compute the "complement" of the Student's
+   distribution: 1 - A(t|nu).  It tells is used to compute the
+   significance of probabilitic tests. *)
+let cpl_student_t t nu =
+  betai (nu /. (nu +. t *. t)) (0.5 *. nu) 0.5
 
 
 (* [comp_rates (name, bm)] computes the number, average and standard
@@ -297,7 +355,7 @@ let beta a b =
    x(2);...; x(n)], the algorithm is
 
    m(1) = x(1)		m(k) = m(k-1) + (x(k) - m(k-1))/k
-   s(1) = 0		s(k) = s(k-1) + (x(k) - m(k-1))/(x(k) - m(k))
+   s(1) = 0		s(k) = s(k-1) + (x(k) - m(k-1))(x(k) - m(k))
 
    One proves by recurrence that
 
