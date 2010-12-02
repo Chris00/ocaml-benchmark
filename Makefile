@@ -1,7 +1,10 @@
-# $Id: Makefile,v 1.3 2004-08-20 19:48:38 chris_77 Exp $
+# $Id: Makefile,v 1.4 2004-08-20 21:06:14 chris_77 Exp $
 
 PKGNAME	   = $(shell grep "name" META | sed -e "s/.*\"\([^\"]*\)\".*/\1/")
 PKGVERSION = $(shell grep "version" META | sed -e "s/.*\"\([^\"]*\)\".*/\1/")
+
+SRC_WEB    = web
+SF_WEB     = /home/groups/o/oc/ocaml-benchmark/htdocs
 
 BYTE_OBJS    :=
 OPT_OBJS     :=
@@ -16,6 +19,8 @@ OCAMLFIND    := ocamlfind
 
 DISTFILES    := INSTALL LICENSE META Makefile README \
 		$(wildcard *.ml) $(wildcard *.mli) $(wildcard examples/)
+
+PKG_TARBALL  = $(PKGNAME)-$(PKGVERSION).tar.bz2
 
 default: all
 
@@ -118,26 +123,28 @@ dist: $(DISTFILES) Make.bat
 	cp -r $(DISTFILES) $(PKGNAME)-$(PKGVERSION)/; \
 	tar --exclude "CVS" --exclude ".cvsignore" --exclude "*~" \
 	   --exclude "*.cm{i,x,o,xa}" --exclude "*.o" \
-	  -jcvf $(PKGNAME)-$(PKGVERSION).tar.bz2 $(PKGNAME)-$(PKGVERSION); \
+	  -jcvf $(PKG_TARBALL) $(PKGNAME)-$(PKGVERSION); \
 	rm -rf $(PKGNAME)-$(PKGVERSION)
 
-# Release a Sourceforge tarball and publish the corresponding HTML doc 
-# FIXME
-.PHONY: publish
-publish: doc dist
-	@if [ -z "$(PKGNAME)" ]; then echo "PKGNAME variable not defined!"; \
-		exit 1; fi ; \
-	PDIR="$(HOME)/www/ocaml/$(PKGNAME)/" ; \
-	mkdir -p $$PDIR/ && cp $(PUBFILES) $$PDIR/ ; \
-	if [ -f "$(PKGNAME)-$$VER.tar.bz2" ] ; then \
-	  cp $(PKGNAME)-$$VER.tar.bz2 $$PDIR/ ; \
-	fi ; \
-	echo "# PUBLISHED FILES IN $$PDIR" ; \
-	if [ -f "$$PDIR/README" ] ; then mv $$PDIR/README $$PDIR/README.txt; fi ; \
-	if [ -d doc ] ; then \
-	    mkdir -p $$PDIR/documentation/ ; \
-	    cp -r doc/* $$PDIR/documentation/ ; \
+# Release a Sourceforge tarball and publish the HTML doc 
+.PHONY: web upload
+web: doc
+	@ if [ -d doc ] ; then \
+	  scp -r doc/ shell.sf.net:$(SF_WEB)/ \
+	  && echo "*** Published documentation on SF" ; \
 	fi
+	@ if [ -d $(SRC_WEB)/ ] ; then \
+	  scp $(SRC_WEB)/*.html shell.sf.net:$(SF_WEB) \
+	  && echo "*** Published web site ($(SRC_WEB)/) on SF" ; \
+	fi
+
+upload: dist
+	@ if [ -z "$(PKG_TARBALL)" ]; then \
+		echo "PKG_TARBALL not defined"; exit 1; fi
+	echo -e "bin\ncd incoming\nput $(PKG_TARBALL)" \
+	  | ncftp -p chris_77@users.sf.net upload.sourceforge.net \
+	  && echo "*** Uploaded $(PKG_TARBALL) to SF"
+
 
 
 .PHONY: clean distclean
