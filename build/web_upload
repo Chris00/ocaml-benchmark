@@ -1,7 +1,7 @@
 #!/bin/sh
 
 SRC_WEB=web
-SF_WEB=shell.sf.net:/home/groups/o/oc/ocaml-benchmark/htdocs
+SF_WEB=chris_77,ocaml-benchmark@frs.sourceforge.net:htdocs
 
 if [ -d doc ] ; then
     scp -r doc/ $SF_WEB	&& echo "*** Published documentation on SF"
