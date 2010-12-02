@@ -1,5 +1,5 @@
-OCAMLCFLAGS=-dtypes
-OCAMLOPTFLAGS=-dtypes
+OCAMLCFLAGS = -annot
+OCAMLOPTFLAGS = -annot
 OCAMLDOCFLAGS=-html -stars -colorize-code -I +contrib
 
 PKGNAME	   = $(shell grep "name" META | sed -e "s/.*\"\([^\"]*\)\".*/\1/")
@@ -11,9 +11,10 @@ DISTFILES  = INSTALL LICENSE META Makefile Makefile.conf README Make.bat \
 		$(wildcard *.ml) $(wildcard *.mli) $(wildcard examples/)
 
 # Publish
+SCP = scp -C
 PKG_TARBALL  = ocaml-$(PKGNAME)-$(PKGVERSION).tar.gz
 SRC_WEB    = web
-SF_WEB     = /home/groups/o/oc/ocaml-benchmark/htdocs
+WEB = ocaml-benchmark.forge.ocamlcore.org:/home/groups/ocaml-benchmark/htdocs/
 
 default:
 	@echo -n "This project now uses 'ocamlbuild' for the build phase.  "
@@ -30,7 +31,7 @@ CMI_FILES := $(addsuffix .cmi,$(basename $(MLI_FILES)))
 BYTE_OBJS := $(if $(ML_FILES),$(PKGNAME).cmo $(BYTE_OBJS),)
 OPT_OBJS  := $(if $(ML_FILES),$(PKGNAME).cmx $(OPT_OBJS),)
 
-DOCFILES  += $(ML_FILES) $(MLI_FILES)
+DOCFILES  += $(MLI_FILES)
 PUBFILES  += $(DOCFILES) README
 
 ARCHIVE   := $(if $(ML_FILES),$(PKGNAME).cma,)
@@ -73,7 +74,7 @@ examples: all
 # Compile HTML documentation
 doc: $(DOCFILES) $(CMI_FILES)
 	@if [ -n "$(DOCFILES)" ] ; then \
-	    if [ ! -x doc ] ; then mkdir doc ; fi ; \
+	    mkdir -p doc; \
 	    $(OCAMLDOC) -v -d doc $(OCAMLDOCFLAGS) $(ODOC_OPT) $(DOCFILES) ; \
 	fi
 
@@ -101,13 +102,12 @@ dist: $(DISTFILES) Make.bat
 .PHONY: web upload
 web: doc
 	@ if [ -d doc ] ; then \
-	  scp -r doc/ shell.sf.net:$(SF_WEB)/ \
-	  && echo "*** Published documentation on SF" ; \
+	  $(SCP) -r doc/ $(WEB)/ \
+	  && echo "*** Published documentation" ; \
 	fi
 	@ if [ -d $(SRC_WEB)/ ] ; then \
-	  scp $(SRC_WEB)/*.html $(SRC_WEB)/*.jpg LICENSE \
-	    shell.sf.net:$(SF_WEB) \
-	  && echo "*** Published web site ($(SRC_WEB)/) on SF" ; \
+	  $(SCP) $(SRC_WEB)/*.html $(SRC_WEB)/*.jpg LICENSE $(WEB) \
+	  && echo "*** Published web site ($(SRC_WEB)/)" ; \
 	fi
 
 upload: dist
