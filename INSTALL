@@ -1,26 +1,30 @@
---------------------------------------------------
-           INSTALLATION INSTRUCTIONS
---------------------------------------------------
+
+                      INSTALLATION INSTRUCTIONS
+----------------------------------------------------------------------
 
 Build the library:
 
-$ make
+	$ make
 
-Install it:
+If you want to test it, use (requires findlib)
 
-$ make install
+	$ make examples
 
-The default install script uses "findlib":
-http://www.ocaml-programming.de/programming/download-caml.html
+Install it (requires findlib):
 
-Clean up the build directory:
+	$ make install
 
-$ make clean
+Clean up the build and examples directory:
+
+	$ make clean
 
 Remove the installed library (requires findlib):
 
-$ make uninstall
+	$ make uninstall
 
+
+"findlib" is available at
+http://www.ocaml-programming.de/programming/download-caml.html
 
 If installing a bundle of libraries, these same commands work in the
 parent directory, and furthermore, the ordering of the build due to
