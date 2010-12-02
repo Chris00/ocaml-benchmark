@@ -17,7 +17,7 @@
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the file
    LICENSE for more details.
 *)
-(* 	$Id: benchmark.mli,v 1.6 2007-01-31 16:41:49 chris_77 Exp $	 *)
+(* 	$Id: benchmark.mli,v 1.7 2007-02-19 20:55:22 chris_77 Exp $	 *)
 
 (** This module implements benchmarking functions for measuring the
  * run-time of one or many functions using latency (multiple
@@ -43,9 +43,9 @@
  *
  * Time how long it takes to some piece of code:
  * {[
- * let t0 = Benchmark.make 0 in
+ * let t0 = Benchmark.make 0L in
  * (* do something here *)
- * let b = Benchmark.sub (Benchmark.make 0) t0 in
+ * let b = Benchmark.sub (Benchmark.make 0L) t0 in
  * print_endline "Benchmark results:";
  * print_endline (Benchmark.to_string b)                       ]}
  *)

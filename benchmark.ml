@@ -20,7 +20,7 @@
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the file
    LICENSE for more details.
 *)
-(* $Id: benchmark.ml,v 1.10 2007-01-31 16:41:49 chris_77 Exp $ *)
+(* $Id: benchmark.ml,v 1.11 2007-02-19 20:55:22 chris_77 Exp $ *)
 
 open Printf
 
@@ -311,7 +311,7 @@ let rec string_of_names funs =
 let latencyN ?min_cpu ?(style=Auto) ?fwidth ?fdigits ?(repeat=1) n funs =
   if n < 4L then invalid_arg "Benchmark.latencyN: n < 4";
   if style <> Nil then (
-    printf "Latencies for %Ld iterations@ of %s%s:\n%!" n
+    printf "Latencies for %Ld iterations of %s%s:\n%!" n
       (string_of_names funs)
       (if repeat > 1 then sprintf " (%i runs)" repeat else "");
   );

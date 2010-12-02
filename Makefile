@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.10 2007-01-31 16:41:49 chris_77 Exp $
+# $Id: Makefile,v 1.11 2007-02-19 20:55:22 chris_77 Exp $
 
 OCAMLCFLAGS=-dtypes
 OCAMLOPTFLAGS=-dtypes
@@ -146,7 +146,7 @@ include .depend
 .PHONY: clean distclean
 clean:
 	rm -f *~ *.cmi *.cmo *.cmx *.cma *.cmxa *.a *.o *.tmp
-	rm -f Make.bat $(PKG_TARBALL)
+	rm -f Make.bat $(PKG_TARBALL) *.dat
 	rm -rf doc/
 	cd examples/; $(MAKE) clean
 
