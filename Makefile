@@ -1,15 +1,19 @@
-# $Id: Makefile,v 1.9 2006-07-08 09:05:32 chris_77 Exp $
+# $Id: Makefile,v 1.10 2007-01-31 16:41:49 chris_77 Exp $
+
+OCAMLCFLAGS=-dtypes
+OCAMLOPTFLAGS=-dtypes
+OCAMLDOCFLAGS=-html -stars -colorize-code -I +contrib
 
 PKGNAME	   = $(shell grep "name" META | sed -e "s/.*\"\([^\"]*\)\".*/\1/")
 PKGVERSION = $(shell grep "version" META | sed -e "s/.*\"\([^\"]*\)\".*/\1/")
 
 include Makefile.conf
 
-DISTFILES  = INSTALL LICENSE META Makefile README Make.bat \
+DISTFILES  = INSTALL LICENSE META Makefile Makefile.conf README Make.bat \
 		$(wildcard *.ml) $(wildcard *.mli) $(wildcard examples/)
 
 # Publish
-PKG_TARBALL  = ocaml-$(PKGNAME)-$(PKGVERSION).tar.bz2
+PKG_TARBALL  = ocaml-$(PKGNAME)-$(PKGVERSION).tar.gz
 SRC_WEB    = web
 SF_WEB     = /home/groups/o/oc/ocaml-benchmark/htdocs
 
@@ -62,15 +66,14 @@ uninstall:
 # Make the examples
 .PHONY: ex examples
 ex: examples
-examples:
+examples: all
 	cd examples/; $(MAKE)
 
 # Compile HTML documentation
 doc: $(DOCFILES) $(CMI_FILES)
 	@if [ -n "$(DOCFILES)" ] ; then \
 	    if [ ! -x doc ] ; then mkdir doc ; fi ; \
-	    $(OCAMLDOC) -v -d doc -html -colorize-code -I +contrib \
-		$(ODOC_OPT) $(DOCFILES) ; \
+	    $(OCAMLDOC) -v -d doc $(OCAMLDOCFLAGS) $(ODOC_OPT) $(DOCFILES) ; \
 	fi
 
 # Make.bat -- easy compilation on win32
@@ -89,8 +92,8 @@ dist: $(DISTFILES) Make.bat
 	mv Make.bat $(PKGNAME)-$(PKGVERSION); \
 	cp -r $(DISTFILES) $(PKGNAME)-$(PKGVERSION)/; \
 	tar --exclude "CVS" --exclude ".cvsignore" --exclude "*~" \
-	  --exclude "*.cm{i,x,o,xa}" --exclude "*.o" \
-	  -jcvf $(PKG_TARBALL) $(PKGNAME)-$(PKGVERSION); \
+	  --exclude-from=.cvsignore \
+	  -zcvf $(PKG_TARBALL) $(PKGNAME)-$(PKGVERSION); \
 	rm -rf $(PKGNAME)-$(PKGVERSION)
 
 # Release a Sourceforge tarball and publish the HTML doc
@@ -118,34 +121,34 @@ upload: dist
 .SUFFIXES: .cmo .cmi .cmx .ml .mli
 
 %.cmi: %.mli
-	$(OCAMLC) $(PKGS_CMA) -c $<
+	$(OCAMLC) $(OCAMLCFLAGS) -c $<
 
 %.cmo: %.ml
-	$(OCAMLC) -c $<
+	$(OCAMLC) $(OCAMLCFLAGS) -c $<
 
 %.cma: %.cmo
-	$(OCAMLC) -a -o $@ $<
+	$(OCAMLC) -a -o $@ $(OCAMLCFLAGS) $<
 
 %.cmx: %.ml
-	$(OCAMLOPT) -c $<
+	$(OCAMLOPT) $(OCAMLOPTFLAGS) -c $<
 
 %.cmxa: %.cmx
-	$(OCAMLOPT) -a -o $@ $<
+	$(OCAMLOPT) -a -o $@ $(OCAMLOPTFLAGS) $<
 
 
 .PHONY: depend
-depend: .depend.ocaml
-.depend.ocaml: $(ML_FILES) $(MLI_FILES)
+depend: .depend
+.depend: $(ML_FILES) $(MLI_FILES)
 	$(OCAMLDEP) $(SYNTAX_OPTS) $(ML_FILES) $(MLI_FILES) > $@
-include .depend.ocaml
+include .depend
 
 ######################################################################
 .PHONY: clean distclean
 clean:
 	rm -f *~ *.cmi *.cmo *.cmx *.cma *.cmxa *.a *.o *.tmp
-	rm -f Make.bat $(PKGNAME)-$(PKGVERSION).tar.bz2
+	rm -f Make.bat $(PKG_TARBALL)
 	rm -rf doc/
 	cd examples/; $(MAKE) clean
 
 distclean: clean
-	rm -f config.status config.cache config.log
+	rm -f config.status config.cache config.log .depend

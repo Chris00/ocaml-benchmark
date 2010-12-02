@@ -9,9 +9,7 @@ BENCHMARK	= -I .. benchmark.cma
 EXAMPLES        := $(wildcard *.ml)
 PACKAGE_OPTS    := $(if $(REQUIRES), -package $(REQUIRES), )
 PREDICATE_OPTS  := $(if $(PREDICATES), -predicates $(PREDICATES), )
-SYNTAX_OPTS     := $(if $(SYNTAX),   -syntax $(SYNTAX), )
-PP_OPTS         := $(if $(PPOPT),    -ppopt $(PPOPT), )
-ALL_OPTS	= $(PACKAGE_OPTS) $(PREDICATE_OPTS) $(SYNTAX_OPTS) $(PP_OPTS)
+ALL_OPTS	= $(PACKAGE_OPTS) $(PREDICATE_OPTS)
 
 OCAMLC		= ocamlfind ocamlc
 OCAMLOPT	= ocamlfind ocamlopt
@@ -23,10 +21,10 @@ byte: $(EXAMPLES:.ml=.exe)
 opt:  $(EXAMPLES:.ml=.com)
 
 %.exe: %.ml ../benchmark.cma
-	OCAMLPATH="../.." $(OCAMLC) -o $@ $(ALL_OPTS) -linkpkg $(BENCHMARK) $<
+	$(OCAMLC) -o $@ $(ALL_OPTS) -linkpkg $(BENCHMARK) $<
 
 %.com: %.ml ../benchmark.cmxa
-	OCAMLPATH="../.." $(OCAMLOPT) -o $@ $(ALL_OPTS) -linkpkg $(BENCHMARK:.cma=.cmxa) $<
+	$(OCAMLOPT) -o $@ $(ALL_OPTS) -linkpkg $(BENCHMARK:.cma=.cmxa) $<
 
 ######################################################################
 .PHONY: clean clobber

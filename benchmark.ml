@@ -2,12 +2,13 @@
    For comparing runtime of functions
    *********************************************************************
 
-   Copyright 2004 by Troestler Christophe
+   Copyright 2004-2007, Troestler Christophe
    Christophe.Troestler(at)umh.ac.be
 
    Copyright 2002-2003, Doug Bagley
    http://www.bagley.org/~doug/ocaml/
-   Based on the Perl module Benchmark.pm by Jarkko Hietaniemi and Tim Bunce
+   Initially based on the Perl module Benchmark.pm by Jarkko Hietaniemi
+   and Tim Bunce
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public License
@@ -19,7 +20,7 @@
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the file
    LICENSE for more details.
 *)
-(* $Id: benchmark.ml,v 1.9 2006-07-08 09:05:32 chris_77 Exp $ *)
+(* $Id: benchmark.ml,v 1.10 2007-01-31 16:41:49 chris_77 Exp $ *)
 
 open Printf
 
@@ -29,13 +30,17 @@ type t = {
   stime  : float;
   cutime : float;
   cstime : float;
-  iters  : int;
+  iters  : Int64.t;
+  (* As of version 0.8, one had to change [iter] from [int] because,
+     as machines run fast, a number of iterations of 2^29 was no
+     longer enough (2^29 is the largest > 0 power of 2 that [int] can
+     hold. *)
 }
 
 type style = No_child | No_parent | All | Auto | Nil
 
 let null_t =
-  { wall = 0.; utime = 0.; stime = 0.; cutime = 0.; cstime = 0.; iters = 0 }
+  { wall = 0.; utime = 0.; stime = 0.; cutime = 0.; cstime = 0.; iters = 0L }
 
 let make n =
   let tms = Unix.times () in
@@ -47,34 +52,47 @@ let make n =
 let add a b =
   { wall = a.wall +. b.wall;       utime = a.utime +. b.utime;
     stime = a.stime +. b.stime;    cutime = a.cutime +. b.cutime;
-    cstime = a.cstime +. b.cstime; iters = a.iters + b.iters }
+    cstime = a.cstime +. b.cstime; iters = Int64.add a.iters b.iters }
 
 let sub a b =
   { wall = a.wall -. b.wall;       utime = a.utime -. b.utime;
     stime = a.stime -. b.stime;    cutime = a.cutime -. b.cutime;
-    cstime = a.cstime -. b.cstime; iters = a.iters - b.iters }
+    cstime = a.cstime -. b.cstime; iters = Int64.sub a.iters b.iters }
 
-let cpu_p b = b.utime +. b.stime
-let cpu_c b = b.cutime +. b.cstime
-let cpu_a b = b.utime +. b.stime +. b.cutime +. b.cstime
+(* It may happen that, because of slight variations, the running time
+   of a fast running test is less than the running time of the null
+   loop.  Returning a negative result is obviously ridiculous, thus
+   one returns 0. *)
+let ( -- ) a b = if (a:float) > b then a -. b else 0.
+let pos_sub a b =
+  { wall = a.wall -- b.wall;       utime = a.utime -- b.utime;
+    stime = a.stime -- b.stime;    cutime = a.cutime -- b.cutime;
+    cstime = a.cstime -- b.cstime; iters = Int64.sub a.iters b.iters }
 
-(* Return a formatted string representation of benchmark structure
-   according to [style].  Default presentation parameters set here. *)
+
+let cpu_process b = b.utime +. b.stime
+let cpu_childs b = b.cutime +. b.cstime
+let cpu_all b = b.utime +. b.stime +. b.cutime +. b.cstime
+
+(* Return a formatted representation of benchmark structure according
+   to [style].  Default values for presentation parameters are set
+   here. *)
 let to_string ?(style=Auto) ?(fwidth=5) ?(fdigits=2) b =
-  let pt = cpu_p b
-  and ct = cpu_c b in
-  let style = (if style = Auto then if ct > 1e-10 then All else No_child
-	       else style) in
+  let pt = cpu_process b
+  and ct = cpu_childs b in
+  let style =
+    if style = Auto then if ct > 1e-10 then All else No_child else style in
   let iter_info t =
-    if b.iters > 0 && t > 0.0 then
-      sprintf " @ %*.*f/s (n=%d)" fwidth fdigits (float b.iters /. t) b.iters
-    else "" in
+    if b.iters > 0L && t > 0.0 then
+      sprintf " @ %*.*f/s (n=%Ld)" fwidth fdigits
+        (Int64.to_float b.iters /. t) b.iters
+    else ""  in
   let f x = sprintf "%*.*f" fwidth fdigits x in
   match style with
   | All ->
       sprintf "%2.0f WALL (%s usr %s sys + %s cusr %s csys = %s CPU)%s"
-        b.wall (f b.utime) (f b.stime) (f b.cutime) (f b.cstime)
-        (f(pt +. ct)) (iter_info pt)
+        b.wall (f b.utime) (f b.stime) (f b.cutime) (f b.cstime) (f(pt +. ct))
+        (iter_info pt)
   | No_child ->
       sprintf "%2.0f WALL (%s usr + %s sys = %s CPU)%s"
         b.wall (f b.utime) (f b.stime) (f pt) (iter_info pt)
@@ -85,11 +103,23 @@ let to_string ?(style=Auto) ?(fwidth=5) ?(fdigits=2) b =
   | Auto -> assert false
 
 
+(* Returns a string in minutes-seconds of a time [t >= 0] given in
+   seconds. *)
+let rec string_of_time t =
+  if t = 0 || t = 1 then string_of_int t ^ "s"
+  else if t < 60 then string_of_int t ^ "s"
+  else if t < 120 then "1m " ^ string_of_time(t - 60)
+  else string_of_int(t / 60) ^ "m " ^ string_of_time(t mod 60)
+
+(* The time is rounded to the nearest integer: *)
+let string_of_time t = string_of_time(truncate(t +. 0.5))
+
+
 type samples = (string * t list) list
 
 let by_name (s1, _) (s2, _) = compare (s1:string) s2
 
-let merge (l1:samples) l2 =
+let merge (l1:samples) (l2:samples) =
   (* [do_merge] assumes [l1] and [l2] are sorted. *)
   let rec do_merge acc l1 l2 =
     match l1, l2 with
@@ -103,147 +133,216 @@ let merge (l1:samples) l2 =
   do_merge [] (List.sort by_name l1) (List.sort by_name l2)
 
 
-(* run function f count times, return time taken *)
-let timeit n f x =
-  let runloop n_iters f x =
-    let tbase = (make 0).utime in
-    (* Wait for user timer to tick.  This makes the error range more
-       like -0.01, +0.  If we don't wait, then it's more like -0.01,
-       +0.01. *)
-    let t0 = ref (make 0) in
-    while tbase = (!t0).utime do t0 := make 0 done;
-    (* loop over function we are timing [n] times *)
-    for i = 1 to n do ignore(f x) done;
-    let t1 = make n_iters in
-    sub t1 !t0 in		  (* return the elapsed time *)
-  let wn = runloop 0 ignore () in (* time a null-loop; no iter count *)
-  let wc = runloop n f x in
-  sub wc wn                       (* time of function minus null-loop *)
+let max_iter = Int64.add (Int64.of_int max_int) 1L
+  (* even if [int] is 63 bits, [(max_iter:Int64.t) > 0] *)
 
-let latency ?(repeat=1) n f x =
+(* [runloop n_iters n f x] returns the elapsed time of running [n >=
+   0L] times [f] with the argument [x].  The structure returned
+   declare [n_iter] iterations. *)
+let runloop n_iters n f x =
+  let n' = Int64.div n max_iter in
+  if n' >= max_iter then
+    invalid_arg "Benchmark.runloop: number of iterations too large";
+  let n1 = Int64.to_int n'
+  and n0 = Int64.to_int(Int64.rem n max_iter) in
+  let t0 = ref (make 0L) in
+  let tbase = !t0.utime in
+  (* Wait for user timer to tick.  This makes the error range more
+     like -0.01, +0.  If we don't wait, then it's more like -0.01,
+     +0.01. *)
+  while tbase = (!t0).utime do t0 := make 0L done;
+  (* Loop over function we are timing [n] times (looping on int64
+     quantities takes too long, this is why we use composite loops). *)
+  for i = 1 to n1 do
+    for j = 0 to max_int do ignore(f x) done; (* [max_iter] runs *)
+  done;
+  for i = 1 to n0 do ignore(f x) done;
+  let t1 = make n_iters in
+  pos_sub t1 !t0
+
+(* time a null-loop; no iter count *)
+let null_loop n = runloop 0L n ignore ()
+
+(* Run function [f] count times, return time taken (all times
+   garanteed to be [>= 0.]) *)
+let timeit n f x =
+  let bn = null_loop n in
+  let bm = runloop n n f x in
+  pos_sub bm bn (* time of function minus null-loop *),
+  bn.wall +. bm.wall (* how much the used had to wait *)
+
+
+type printer = {
+  print_indent : string -> unit; (* prefix, flushes *)
+  print : string -> unit; (* No prefix but flushes *)
+}
+
+(* [print_run ff bm] prints the list of timings [bm] according to the
+   style defined by the optional parameters. *)
+let print_run out ?(min_count=4L) ?(min_cpu=0.4) ~style ?fwidth ?fdigits b =
+  out.print_indent(to_string ~style ?fwidth ?fdigits b ^ "\n");
+  if b.iters < min_count || cpu_all b < min_cpu
+    || (b.wall < 1. && b.iters < 1000L)
+  then out.print_indent "(warning: too few iterations for a reliable count)\n"
+
+
+let latency n out ?min_count ?min_cpu ~style ?fwidth ?fdigits
+    ~repeat name f x =
   let rec loop nrep acc =
     if nrep < 1 then acc
-    else loop (nrep - 1) (timeit n f x :: acc) in
+    else
+      let bm, _ = timeit n f x in
+      print_run out ?min_count ?min_cpu ~style ?fwidth ?fdigits bm;
+      loop (nrep - 1) (bm :: acc) in
   loop repeat []
 
 
-(* Perl: countit *)
 (* Read the code from bottom to top: [min_iter] determines the minimal
    number of iterations to have a significant timing, then
    [estimate_niter] estimate by linear interpolation the number of
-   iter to run [> tmax] and then the test is performed. *)
-let throughput ?(repeat=1) tmax f x =
+   iter to run [> tmin] and then the test is performed. *)
+let throughput tmin out ?min_count ?min_cpu ~style ?fwidth ?fdigits
+    ~repeat name f x =
   (* Run [f] for [niter] times and complete with >= [nmin] iterations
-     (estimated by linear interpolation) to run >= [tmax]. *)
-  let rec run_test nmin niter bm_init =
-    let bm = add bm_init (timeit niter f x) in
-    let tn = cpu_p bm in
-    if tn >= tmax then bm else
-      let n = truncate((tmax /. tn -. 1.) *. float bm.iters) in
-      run_test nmin (max nmin n) bm  in
-  (* Repeat the test [nrep] times. *)
-  let rec repeat_test nrep acc nmin niter =
-    if nrep < 1 then acc else
-      let bm = run_test nmin niter null_t in
-      repeat_test (nrep - 1) (bm :: acc) nmin niter in
-  (* Estimate number of iter > [nmin] to have a running time >=
-     [tmax].  The initial estimate is [n] running [tn] secs.  Linear
-     estimates bear a 5% fudge to improve the overall responsiveness. *)
-  let tpra = 0.1 *. tmax (* Target/time practice *) in
-  let rec estimate_niter nmin n tn =
-    if tn >= tpra then
-      let niter = truncate(float n *. (1.05 *. tmax /. tn)) (* lin estim *) in
-      repeat_test repeat [] nmin (max nmin niter)
+     (estimated by linear interpolation) to run >= [tmin]. *)
+  let rec run_test nmin niter bm_init total_wall =
+    let bm, wall = timeit niter f x in
+    let bm = add bm_init bm in
+    let tn = cpu_process bm in
+    let total_wall = total_wall +. wall in
+    if tn >= tmin then (
+      print_run out ?min_count ?min_cpu ~style ?fwidth ?fdigits bm;
+      bm, total_wall
+    )
     else
-      let new_n = truncate(float n *. 1.05 *. tpra /. tn) (* lin estim *) in
-      let new_tn = cpu_p (timeit new_n f x) in
+      (* FIXME *)
+      let n = Int64.of_float((tmin /. tn -. 1.) *. Int64.to_float bm.iters) in
+      run_test nmin (max nmin n) bm total_wall in
+  (* Repeat the test [nrep] times and return the list of results. *)
+  let rec repeat_test nrep acc nmin niter wall_estim =
+    if nrep < 1 then acc else
+      let bm, wall = run_test nmin niter null_t 0. in
+      let wall_estim =
+        if wall > wall_estim +. 60. then (
+          out.print_indent("(Estimated time for subsequent runs: "
+                            ^ (string_of_time wall) ^ ")\n");
+          wall
+        )
+        else wall_estim in
+      repeat_test (nrep - 1) (bm :: acc) nmin niter wall_estim in
+  (* Estimate number of iter > [nmin] to have a running time >=
+     [tmin].  The initial estimate is [n] running [tn] secs.  Linear
+     estimates bear a 5% fudge to improve the overall responsiveness. *)
+  let tpra = 0.1 *. tmin (* Target/time practice *) in
+  let rec estimate_niter nmin n tn wall =
+    if tn >= tpra then
+      (* FIXME: *)
+      let niter = Int64.of_float(Int64.to_float n *. (1.05 *. tmin /. tn)) (* lin estim *) in
+      let wall_estim = wall *. (1.05 *. tmin /. tn) in
+      if wall_estim >= 60. then
+        out.print_indent("(Estimated time for each run: "
+                          ^ (string_of_time wall_estim) ^ ")\n");
+      repeat_test repeat [] nmin (max nmin niter) wall_estim
+    else
+      let new_n = Int64.of_float(Int64.to_float n *. 1.05 *. tpra /. tn) (* lin estim *) in
+      let new_bn, new_wall = timeit new_n f x in
+      let new_tn = cpu_process new_bn in
       let n = (* make sure we make progress *)
         if new_tn > 1.2 *. tn then new_n
-        else truncate(1.1 *. float n) + 1 in
-      estimate_niter nmin n new_tn in
+        else Int64.of_float(1.1 *. Int64.to_float n +. 1.) (* FIXME *) in
+      estimate_niter nmin n new_tn new_wall in
   (* Determine the minimum number of iterations to run >= 0.1 sec
-     (whatever [tmax]). *)
-  let rec min_iter n =
-    let bm = timeit n f x in
-    let tn = cpu_p bm in
-    if tn < 0.1 then min_iter(2 * n)
-    else if tn < tmax then estimate_niter n n tn (* tn > 0.1 *)
-    else (* minimal [n] good for [tmax] *)
-      repeat_test (repeat - 1) [bm] n n in
-  min_iter 1
+     (whatever [tmin]).  Inform the user if it takes too long. *)
+  let rec min_iter n ~takes_long total_wall =
+    if n <= 0L then
+      failwith "throughput: number of iterations too large for Int64.t storage";
+    let bm, wall = timeit n f x in
+    let tn = cpu_process bm in
+    let total_wall = total_wall +. wall in
+    if tn < 0.1 then (
+      let takes_long =
+        if total_wall >= 30. then (
+          if takes_long then out.print "." else
+            out.print_indent("(Determining how many runs to perform, \
+		please be patient...");
+          true
+        )
+        else false in
+      min_iter (Int64.shift_left n 1) (* 2*n *) ~takes_long total_wall
+    )
+    else (
+      if takes_long then out.print ")\n";
+      if tn < tmin then estimate_niter n n tn wall (* tn > 0.1 *)
+      else  (* minimal [n] good for [tmin] *)
+        repeat_test (repeat - 1) [bm] n n wall
+    ) in
+  min_iter 1L ~takes_long:false 0.
 
 
+(* Make a print function that prefixes each output except the first
+   one by [nspace] spaces. *)
+let make_printer nspace =
+  let first = ref true in
+  let prefix = String.make nspace ' ' in
+  let print s = print_string s; flush stdout in
+  let print_indent s =
+    if !first then first := false else print_string prefix;
+    print s in
+  { print_indent = print_indent; print = print; }
 
-(* [print1 bm title] prints the list of timings [bm] identified with
-   with [name] according to the style defined by the optional
-   parameters. *)
-let print1 ?(min_count=4) ?(min_cpu=0.4) ?(style=Auto) ?fwidth ?fdigits
-    bm name =
-  if style <> Nil then begin
-    let print_t prefix b =
-      printf "%11s %s\n" prefix (to_string ~style ?fwidth ?fdigits b);
-      if b.iters < min_count || cpu_a b < min_cpu
-        || (b.wall < 1. && b.iters < 1000)
-      then print_string
-        "            (warning: too few iterations for a reliable count)\n" in
-    (* FIXME: preceeding message should be changed if "not enough
-       time" (the routine is too fast)*)
-    begin match bm with
-    | [] -> printf "%10s: (no results)\n" name
-    | b :: tl ->
-        print_t (name ^ ":") b;
-        List.iter (print_t "") tl
-    end;
-    flush stdout
-  end
+let null_printer = { print_indent = (fun _ -> ());  print = (fun _ -> ()) }
 
-(* Perl: timethese *)
-let testN ~title ~test default_f_name  ?min_count ?min_cpu ?(style=Auto)
-    ?fwidth ?fdigits funs =
-  if style <> Nil then begin
-    let names = List.map (fun (a,_,_) -> a) funs in
-    print_endline(title(String.concat ", " names));
-  end;
+
+(* Generic interface for performing measurments on a list of functions *)
+let testN ~test default_f_name  ?min_count ?min_cpu ~style
+    ?fwidth ?fdigits ~repeat funs =
   let result_of (name, f, x) =
-    let bm = test f x in
-    if style <> Nil then begin
-      let name = if name = "" then default_f_name else name in
-      print1 ?min_count ?min_cpu ~style ?fwidth ?fdigits bm name
-    end;
+    printf "%10s: %!" (if name = "" then default_f_name else name);
+    let out = if style = Nil then null_printer else make_printer 12 in
+    let bm = test out ?min_count ?min_cpu ~style ?fwidth ?fdigits
+      ~repeat name f x in
     (name, bm) in
   List.map result_of funs
 
+let rec string_of_names funs =
+  String.concat ", " (List.map (fun (a,_,_) -> sprintf "%S" a) funs)
 
-let latencyN ?min_cpu ?style ?fwidth ?fdigits ?(repeat=1) n funs =
-  if n < 4 then invalid_arg "Benchmark.latencyN";
-  let title s =
-    sprintf "Latencies for %d iterations of %s%s:" n s
-      (if repeat > 1 then sprintf " (%i runs)" repeat else "") in
-  testN ~title ~test:(latency ~repeat n)
-    (sprintf "[run %d times]" n) ?min_cpu ?style ?fwidth ?fdigits funs
+
+let latencyN ?min_cpu ?(style=Auto) ?fwidth ?fdigits ?(repeat=1) n funs =
+  if n < 4L then invalid_arg "Benchmark.latencyN: n < 4";
+  if style <> Nil then (
+    printf "Latencies for %Ld iterations@ of %s%s:\n%!" n
+      (string_of_names funs)
+      (if repeat > 1 then sprintf " (%i runs)" repeat else "");
+  );
+  testN ~test:(latency n) (sprintf "[run %Ld times]" n)
+    ?min_cpu ~style ?fwidth ?fdigits ~repeat funs
 
 let latency1 ?min_cpu ?style ?fwidth ?fdigits ?repeat  n ?(name="") f x =
-  if n < 4 then invalid_arg "Benchmark.latency1";
+  if n < 4L then invalid_arg "Benchmark.latency1";
   latencyN ?min_cpu ?style ?fwidth ?fdigits ?repeat n [(name, f, x)]
 
 
-(* FIXME: when a function is really fast, one often go (a lot) over
-   the fixed time witout any explanation *)
-let throughputN ?min_count ?style ?fwidth ?fdigits ?(repeat=1) n funs =
-  let tmax = if n <= 0 then 3. (* default num of sec *) else float n in
-  let title s =
-    sprintf "Throughputs for %s%s running%s for at least %g CPU seconds:"
-      s (if List.length funs > 1 then ", each" else "")
+let throughputN ?min_count ?(style=Auto) ?fwidth ?fdigits ?(repeat=1) n funs =
+  if n <= 0 then invalid_arg "Benchmark.throughputN: n <= 0";
+  let tmin = float n in
+  if style <> Nil then (
+    printf "Throughputs for %s%s running%s for at least %g CPU second%s:\n%!"
+      (string_of_names funs)
+      (if List.length funs > 1 then " each" else "")
       (if repeat > 1 then sprintf " %i times" repeat else "")
-      tmax in
-  testN ~title ~test:(throughput ~repeat tmax)
-    (sprintf "[run > %3.1g secs]" tmax)
-    ?min_count ?style ?fwidth ?fdigits funs
+      tmin (if n > 1 then "s" else "");
+  );
+  testN ~test:(throughput tmin) (sprintf "[run > %3.1g secs]" tmin)
+    ?min_count ~style ?fwidth ?fdigits ~repeat funs
 
 let throughput1 ?min_count ?style ?fwidth ?fdigits ?repeat n ?(name="") f x =
+  if n <= 0 then invalid_arg "Benchmark.throughput1: n <= 0";
   throughputN ?min_count ?style ?fwidth ?fdigits ?repeat n [(name, f, x)]
 
 
+(* Statistical tests and comparison table
+ ***********************************************************************)
 
 (* Utility functions *)
 let list_mapi f =
@@ -376,14 +475,14 @@ let comp_rates cpu (name, bm) =
   let rec loop n m s = function
     | [] -> (name, n, m, s)
     | b :: tl ->
-        let rate = float b.iters /. (cpu b +. 1e-15) in
+        let rate = Int64.to_float b.iters /. cpu b in
         let n' = n + 1 in
         let m' = m +. (rate -. m) /. (float n') in
         let s' = s +. (rate -. m) *. (rate -. m') in
         loop n' m' s' tl in
   match bm with
   | [] -> (name, 0, nan, 0.) (* NaN used for no-data *)
-  | b :: tl -> loop 1 (float b.iters /. (cpu b +. 1e-15)) 0. tl
+  | b :: tl -> loop 1 (Int64.to_float b.iters /. (cpu b +. 1e-15)) 0. tl
 
 (* Compare rates *)
 let by_rates (_,_,r1,_) (_,_,r2,_) = compare (r1:float) r2
@@ -404,7 +503,7 @@ let different_rates significance  n1 r1 s1  n2 r2 s2 =
     cpl_student_t t df <= significance
 
 
-(* [string_of_rate display_as_rate r s] *)
+(* [string_of_rate display_as_rate confidence n r s] *)
 let string_of_rate display_as_rate =
   let per_sec = if display_as_rate then "/s" else "" in
   fun confidence n r s ->
@@ -427,14 +526,13 @@ let string_of_rate display_as_rate =
 
 (* print results of a bench_many run *)
 (* results = [(name, bm); (name, bm); (name, bm); ...] *)
-(* Perl: cmpthese *)
 let tabulate ?(no_parent=false) ?(confidence=0.95) results =
   if confidence < 0. || confidence > 1. then
-    invalid_arg "Benchmark.tabulate";
+    invalid_arg "Benchmark.tabulate: confidence < 0. or > 1.";
   let len = List.length results in
-  if len = 0 then invalid_arg "Benchmark.tabulate";
+  if len = 0 then invalid_arg "Benchmark.tabulate: empty list of results";
   (* Compute (name, rate, sigma) for all results and sort them by rates *)
-  let cpu = if no_parent then cpu_c else cpu_p in
+  let cpu = if no_parent then cpu_childs else cpu_process in
   let rates = List.sort by_rates (List.map (comp_rates cpu) results) in
   (* Decide whether to display by rates or seconds *)
   let display_as_rate =
@@ -442,8 +540,8 @@ let tabulate ?(no_parent=false) ?(confidence=0.95) results =
   (*
    * Compute rows
    *)
-  let top_row = "" :: (if display_as_rate then " Rate" else " s/iter") ::
-                  "" :: (List.map (fun (s,_,_,_) -> " " ^ s) rates) in
+  let top_row = "" :: (if display_as_rate then " Rate" else " s/iter")
+                :: "" :: (List.map (fun (s,_,_,_) -> " " ^ s) rates) in
   (* Initialize the widths of the columns from the top row *)
   let col_width = Array.of_list (List.map String.length top_row) in
   (* Build all the data [rows], each starting with separation space *)

@@ -1,4 +1,4 @@
-(* $Id: regexps.ml,v 1.1.1.1 2004-08-18 21:29:29 chris_77 Exp $ *)
+(* $Id: regexps.ml,v 1.2 2007-01-31 16:41:49 chris_77 Exp $ *)
 
 open Printf
 open Benchmark
@@ -27,7 +27,7 @@ let pcre_match dat =
   (group.(1), group.(2))
 
 let str_match dat =
-  let pos = Str.search_forward str_re dat 0 in
+  let _pos = Str.search_forward str_re dat 0 in
   (Str.matched_group 1 dat, Str.matched_group 2 dat)
 
 let () =
@@ -37,8 +37,9 @@ let () =
   let (a, b) = str_match  bigdata in printf "Str  matches: %s %s\n" a b;
   print_newline ();
 
-  let res = throughputN 5 [("pcre match", pcre_match, bigdata);
-                           ("str match",  str_match,  bigdata)] in
+  let res = throughputN ~repeat:5 5
+    [("pcre match", pcre_match, bigdata);
+     ("str match",  str_match,  bigdata)] in
   print_newline();
   tabulate res
 

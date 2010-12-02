@@ -1,8 +1,12 @@
-*.annot
+.cvsignore
+CVS
 *.cmi
 *.cmo
 *.cma
 *.cmx
 *.cmxa
 *.o
+*.annot
+*.exe
+*.com
 doc

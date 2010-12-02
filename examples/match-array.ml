@@ -1,9 +1,18 @@
-let string_of_month =
+(* This is a typical problem where the functions are so fast (on a
+   2Ghz machine) that it takes way too long to get results.  Thus a
+   wrapping in a loop is done. *)
+
+let n = 100
+
+let string_of_month1 =
   let month = [| "Jan"; "Feb"; "Mar"; "Apr"; "May"; "Jun"; "Jul"; "Aug";
 		 "Sep"; "Oct"; "Nov"; "Dec" |] in
   fun i -> Array.unsafe_get month i
 
-let string_of_month1 = function
+let f1 () =
+  for i = 1 to n do ignore(string_of_month1 7) done
+
+let string_of_month2 = function
   | 0 -> "Jan"
   | 1 -> "Feb"
   | 2 -> "Mar"
@@ -18,10 +27,14 @@ let string_of_month1 = function
   | 11 -> "Dec"
   | _ -> failwith "h"
 
+let f2 () =
+  for i = 1 to n do ignore(string_of_month2 7) done
+
+
 open Benchmark
 
 let () =
-  let res = latencyN 20_000_000 [ ("arr", string_of_month, 7);
-				  ("pat", string_of_month1, 7); ] in
+  let res = throughputN 3 ~repeat:5 [ ("arr", f1, ());
+				      ("pat", f2, ()); ] in
   tabulate res
 
