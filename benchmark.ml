@@ -19,7 +19,7 @@
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the file
    LICENSE for more details.
  *)
-(* $Id: benchmark.ml,v 1.3 2004-08-20 13:15:36 chris_77 Exp $ *)
+(* $Id: benchmark.ml,v 1.4 2004-08-20 13:45:48 chris_77 Exp $ *)
 
 open Printf
 
@@ -287,12 +287,14 @@ let log_gamma =
 let beta a b =
   exp(log_gamma a +. log_gamma b -. log_gamma(a +. b))
 
+(* Incomplete Beta function. *)
 
 
 
-(* [comp_rates (name, bm)] computes the average and standard deviation
-   of rates from the list of timings [bm].  If bm = [x(1); x(2);...;
-   x(n)], the algorithm is
+
+(* [comp_rates (name, bm)] computes the number, average and standard
+   deviation of rates from the list of timings [bm].  If bm = [x(1);
+   x(2);...; x(n)], the algorithm is
 
    m(1) = x(1)		m(k) = m(k-1) + (x(k) - m(k-1))/k
    s(1) = 0		s(k) = s(k-1) + (x(k) - m(k-1))/(x(k) - m(k))
@@ -300,16 +302,13 @@ let beta a b =
    One proves by recurrence that
 
    m(k) = sum(x(i) : 1 <= i <= k) / k
-   s(k) = sum(x(i)**2 : 1 <= i <= k) + k m(k)**2
-
-   Therefore:
-
-   average = m(n) 	standard deviation = sqrt(s(n)/n)
+   s(k) = sum(x(i)**2 : 1 <= i <= k) - k m(k)**2
+   = sum( (x(i) - m(k))**2 : 1 <= i <= k)
 
    Cf. Knuth, Seminumerical algorithms. *)
 let comp_rates cpu (name, bm) =
   let rec loop n m s = function
-    | [] -> (name, m, sqrt(s /. float n))
+    | [] -> (name, n, m, s)
     | b :: tl ->
         let rate = (float b.iters) /. (cpu b +. 1e-15) in
         let n' = n + 1 in
@@ -317,11 +316,11 @@ let comp_rates cpu (name, bm) =
         let s' = s +. (rate -. m) *. (rate -. m') in
         loop n' m' s' tl in
   match bm with
-  | [] -> (name, nan, 0.) (* NaN used for no-data *)
+  | [] -> (name, 0, nan, 0.) (* NaN used for no-data *)
   | b :: tl -> loop 1 ((float b.iters) /. (cpu b +. 1e-15)) 0. tl
 
 (* Compare rates *)
-let cmp_rates (_,a,_) (_,b,_) = compare (a:float) b
+let cmp_rates (_,_,r1,_) (_,_,r2,_) = compare (r1:float) r2
 
 let is_nan x = (classify_float x = FP_nan)
 
@@ -336,12 +335,12 @@ let tabulate ?(no_parent=false) ?(percent=1.) results =
   let rates = List.sort cmp_rates (List.map (comp_rates cpu) results) in
   (* Decide whether to display by rates or seconds *)
   let display_as_rate =
-    let (_,r,_) = List.nth rates (len / 2) in r > 1. in
+    let (_,_,r,_) = List.nth rates (len / 2) in r > 1. in
   (*
    * Compute rows
    *)
   let top_row = "" :: (if display_as_rate then " Rate" else " s/iter") ::
-                "" :: (List.map (fun (s,_,_) -> " " ^ s) rates) in
+                "" :: (List.map (fun (s,_,_,_) -> " " ^ s) rates) in
   (* Initialize the widths of the columns from the top row *)
   let col_width = Array.of_list (List.map String.length top_row) in
   (* Build all the data [rows] -- starting with separation space *)
@@ -360,7 +359,7 @@ let tabulate ?(no_parent=false) ?(percent=1.) results =
     else if a >= 0.1 then p 3
     else if sigma < 1e-15 then (sprintf " %g%s" a per_sec, "")
     else (sprintf " %g+-" a, sprintf "%g%s" err per_sec) in
-  let make_row i (row_name, row_rate, row_sigma) =
+  let make_row i (row_name, row_n, row_rate, row_sigma) =
     (* Column 0: test name *)
     col_width.(0) <- max (String.length row_name) col_width.(0);
     (* Column 1 & 2: performance *)
@@ -368,7 +367,7 @@ let tabulate ?(no_parent=false) ?(percent=1.) results =
     col_width.(1) <- max (String.length ra) col_width.(1);
     col_width.(2) <- max (String.length ra_err) col_width.(2);
     (* Columns 3..(len + 2): performance ratios *)
-    let make_col j (col_name, col_rate, col_sigma) =
+    let make_col j (col_name, col_n, col_rate, col_sigma) =
       let ratio =
         if i = j || is_nan row_rate || is_nan col_rate then "--"
         else sprintf " %.0f%%" (100. *. row_rate /. col_rate -. 100.) in
