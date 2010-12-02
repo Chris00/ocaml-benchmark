@@ -1,15 +1,25 @@
 (* File: benchmark.ml
- * For comparing runtime of functions
- **********************************************************************
- *
- * Modified in Aug. 2004 by Troestler Christophe
- * Christophe.Troestler(at)umh.ac.be
- *
- * Copyright 2002-2003, Doug Bagley
- * http://www.bagley.org/~doug/ocaml/
- * Based on the Perl module Benchmark.pm by Jarkko Hietaniemi and Tim Bunce
+   For comparing runtime of functions
+   *********************************************************************
+
+   Modified in Aug. 2004 by Troestler Christophe
+   Christophe.Troestler(at)umh.ac.be
+
+   Copyright 2002-2003, Doug Bagley
+   http://www.bagley.org/~doug/ocaml/
+   Based on the Perl module Benchmark.pm by Jarkko Hietaniemi and Tim Bunce
+
+   This library is free software; you can redistribute it and/or
+   modify it under the terms of the GNU Lesser General Public License
+   version 2.1 as published by the Free Software Foundation, with the
+   special exception on linking described in file LICENSE.
+
+   This library is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the file
+   LICENSE for more details.
  *)
-(* $Id: benchmark.ml,v 1.1.1.1 2004-08-18 21:29:29 chris_77 Exp $ *)
+(* $Id: benchmark.ml,v 1.2 2004-08-20 13:10:00 chris_77 Exp $ *)
 
 open Printf
 
@@ -244,6 +254,36 @@ let list_iteri f =
     | [] -> ()
     | a::l -> let () = f i a in loop (i + 1) l in
   loop 0
+
+
+(* [log_gamma x] computes the logarithm of the Gamma function at [x]
+   using Lanczos method.  It is assumed [x > 0.].
+
+   See e.g. http://home.att.net/~numericana/answer/info/godfrey.htm *)
+let log_gamma =
+  let c = [|    1.000000000000000174663;
+             5716.400188274341379136;
+           -14815.30426768413909044;
+            14291.49277657478554025;
+            -6348.160217641458813289;
+             1301.608286058321874105;
+             -108.1767053514369634679;
+                2.605696505611755827729;
+               -0.7423452510201416151527e-2;
+                0.5384136432509564062961e-7;
+               -0.4023533141268236372067e-8 |] in
+  let c_last = Array.length c - 1 in
+  let g = float(c_last - 1) in
+  let sqrt2pi = sqrt(8. *. atan 1.) in
+  let rec sum i den s =
+    if i > 0 then sum (i - 1) (den -. 1.) (s +. c.(i) /. den)
+    else c.(0) +. s in
+  fun x ->
+    let xg = x +. g in
+    let xg_5 = xg -. 0.5 in
+    log(sqrt2pi *. sum c_last xg 0.) +. (x -. 0.5) *. log xg_5 -. xg_5
+
+
 
 (* [comp_rates (name, bm)] computes the average and standard deviation
    of rates from the list of timings [bm].  If bm = [x(1); x(2);...;
