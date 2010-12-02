@@ -1,3 +1,23 @@
+(* File: benchmark.mli
+
+   Modified in Aug. 2004 by Troestler Christophe
+   Christophe.Troestler(at)umh.ac.be
+
+   Copyright 2002-2003, Doug Bagley
+   http://www.bagley.org/~doug/ocaml/
+   Based on the Perl module Benchmark.pm by Jarkko Hietaniemi and Tim Bunce
+
+   This library is free software; you can redistribute it and/or
+   modify it under the terms of the GNU Lesser General Public License
+   version 2.1 as published by the Free Software Foundation, with the
+   special exception on linking described in file LICENSE.
+
+   This library is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the file
+   LICENSE for more details.
+*)
+(* 	$Id: benchmark.mli,v 1.2 2004-08-20 13:08:07 chris_77 Exp $	 *)
 (** This module implements benchmarking functions for measuring the
   run-time of one or many functions using latency (multiple
   repetitions) or throughput (repeat until some time period has
