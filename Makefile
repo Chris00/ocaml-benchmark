@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.7 2005-03-21 23:15:26 chris_77 Exp $
+# $Id: Makefile,v 1.8 2005-04-05 20:47:54 chris_77 Exp $
 
 PKGNAME	   = $(shell grep "name" META | sed -e "s/.*\"\([^\"]*\)\".*/\1/")
 PKGVERSION = $(shell grep "version" META | sed -e "s/.*\"\([^\"]*\)\".*/\1/")
@@ -15,7 +15,7 @@ OCAMLFIND  = ocamlfind
 DISTFILES  = INSTALL LICENSE META Makefile README \
 		$(wildcard *.ml) $(wildcard *.mli) $(wildcard examples/)
 
-PKG_TARBALL  = $(PKGNAME)-$(PKGVERSION).tar.bz2
+PKG_TARBALL  = ocaml-$(PKGNAME)-$(PKGVERSION).tar.bz2
 
 default: all
 
