@@ -1,6 +1,6 @@
 # Specifications for the Benchmark module             		-*-conf-*-
 name = "benchmark"
-version = "0.8"
+version = "0.9"
 description = "Benchmark running times of code."
 requires = "unix"
 archive(byte) = "benchmark.cma"
