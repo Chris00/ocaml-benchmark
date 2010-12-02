@@ -2,24 +2,24 @@
            INSTALLATION INSTRUCTIONS
 --------------------------------------------------
 
-["findlib" is a pre-requisite for build and installation.
-  http://www.ocaml-programming.de/programming/download-caml.html]
-
 Build the library:
 
- > make
+$ make
 
 Install it:
 
- > make install
+$ make install
+
+The default install script uses "findlib":
+http://www.ocaml-programming.de/programming/download-caml.html
 
 Clean up the build directory:
 
- > make clean
+$ make clean
 
-Remove the installed library:
+Remove the installed library (requires findlib):
 
- > make uninstall
+$ make uninstall
 
 
 If installing a bundle of libraries, these same commands work in the
