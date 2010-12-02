@@ -19,7 +19,7 @@
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the file
    LICENSE for more details.
  *)
-(* $Id: benchmark.ml,v 1.2 2004-08-20 13:10:00 chris_77 Exp $ *)
+(* $Id: benchmark.ml,v 1.3 2004-08-20 13:15:36 chris_77 Exp $ *)
 
 open Printf
 
@@ -282,6 +282,11 @@ let log_gamma =
     let xg = x +. g in
     let xg_5 = xg -. 0.5 in
     log(sqrt2pi *. sum c_last xg 0.) +. (x -. 0.5) *. log xg_5 -. xg_5
+
+(* Beta function *)
+let beta a b =
+  exp(log_gamma a +. log_gamma b -. log_gamma(a +. b))
+
 
 
 
