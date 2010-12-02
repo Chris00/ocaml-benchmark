@@ -2,7 +2,7 @@
    For comparing runtime of functions
    *********************************************************************
 
-   Copyright 2004-2007, Troestler Christophe
+   Copyright 2004-present, Troestler Christophe
    Christophe.Troestler(at)umh.ac.be
 
    Copyright 2002-2003, Doug Bagley
@@ -20,7 +20,6 @@
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the file
    LICENSE for more details.
 *)
-(* $Id: benchmark.ml,v 1.12 2008-01-07 07:47:13 chris_77 Exp $ *)
 
 open Printf
 

@@ -1,5 +1,3 @@
-(* $Id: numbers.ml,v 1.2 2007-01-31 16:41:49 chris_77 Exp $ *)
-
 open Printf
 open Benchmark
 

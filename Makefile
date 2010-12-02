@@ -1,5 +1,3 @@
-# $Id: Makefile,v 1.12 2007-06-11 20:37:08 chris_77 Exp $
-
 OCAMLCFLAGS=-dtypes
 OCAMLOPTFLAGS=-dtypes
 OCAMLDOCFLAGS=-html -stars -colorize-code -I +contrib

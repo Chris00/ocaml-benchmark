@@ -1,5 +1,3 @@
-(* $Id: let-try.ml,v 1.1 2006-07-08 09:11:35 chris_77 Exp $ *)
-
 (* Compare two possible implementations of let try x = ... with ... *)
 
 let k x = if x >= 0 then x else failwith "x < 0"

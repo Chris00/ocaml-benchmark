@@ -1,10 +1,8 @@
-# $Id: README,v 1.2 2004-08-25 11:36:59 chris_77 Exp $
-
 
   Benchmark - measure/compare run-time of OCaml functions
 
 
-  Copyright 2004, Christophe Troestler
+  Copyright 2004-present, Christophe Troestler
 
   Copyright 2002-2003, Doug Bagley
   http://www.bagley.org/~doug/ocaml/
@@ -22,8 +20,8 @@ Send your comments, bug reports,... to chris_77@users.sourceforge.net
 
 This library is free software; you can redistribute it and/or modify
 it under the terms of the GNU Lesser General Public License version
-2.1 as published by the Free Software Foundation, with the special
-exception on linking described in file LICENSE.
+2.1 or later as published by the Free Software Foundation, with the
+special exception on linking described in file LICENSE.
 
 This library is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of

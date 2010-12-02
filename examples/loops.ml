@@ -1,5 +1,3 @@
-(* $Id: loops.ml,v 1.1 2004-08-25 11:40:37 chris_77 Exp $ *)
-
 open Benchmark
 
 (* Test for the speed of recusion w.r.t. imperative loops to access

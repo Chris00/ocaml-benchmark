@@ -17,7 +17,6 @@
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the file
    LICENSE for more details.
 *)
-(* 	$Id: benchmark.mli,v 1.7 2007-02-19 20:55:22 chris_77 Exp $	 *)
 
 (** This module implements benchmarking functions for measuring the
  * run-time of one or many functions using latency (multiple

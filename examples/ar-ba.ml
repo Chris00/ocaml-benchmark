@@ -1,3 +1,5 @@
+(* Compare bigarray and standard float array access times.  *)
+
 open Bigarray
 
 let n = 1000
