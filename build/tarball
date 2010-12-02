@@ -2,9 +2,7 @@
 
 # Make a tarball
 
-PKGNAME=`grep "name" META | sed -e "s/.*\"\([^\"]*\)\".*/\1/"`
-PKGVERSION=`grep "version" META | sed -e "s/.*\"\([^\"]*\)\".*/\1/"`
-PKG_TARBALL=ocaml-$PKGNAME-$PKGVERSION.tar.gz
+source tarball_name
 
 DISTFILES="INSTALL LICENSE META Makefile Makefile.conf README Make.bat \
 	*.ml *.mli examples/ \

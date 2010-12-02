@@ -20,7 +20,7 @@
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the file
    LICENSE for more details.
 *)
-(* $Id: benchmark.ml,v 1.11 2007-02-19 20:55:22 chris_77 Exp $ *)
+(* $Id: benchmark.ml,v 1.12 2008-01-07 07:47:13 chris_77 Exp $ *)
 
 open Printf
 
@@ -32,9 +32,9 @@ type t = {
   cstime : float;
   iters  : Int64.t;
   (* As of version 0.8, one had to change [iter] from [int] because,
-     as machines run fast, a number of iterations of 2^29 was no
+     as machines run faster, a number of iterations ~ 2^29 is no
      longer enough (2^29 is the largest > 0 power of 2 that [int] can
-     hold. *)
+     hold on a 32 bits platform. *)
 }
 
 type style = No_child | No_parent | All | Auto | Nil
@@ -111,7 +111,7 @@ let rec string_of_time t =
   else if t < 120 then "1m " ^ string_of_time(t - 60)
   else string_of_int(t / 60) ^ "m " ^ string_of_time(t mod 60)
 
-(* The time is rounded to the nearest integer: *)
+(* The time [t >= 0] is rounded to the nearest integer: *)
 let string_of_time t = string_of_time(truncate(t +. 0.5))
 
 
@@ -296,9 +296,12 @@ let null_printer = { print_indent = (fun _ -> ());  print = (fun _ -> ()) }
 (* Generic interface for performing measurments on a list of functions *)
 let testN ~test default_f_name  ?min_count ?min_cpu ~style
     ?fwidth ?fdigits ~repeat funs =
+  let length_name =
+    List.fold_left (fun m (n,_,_) -> max m (String.length n)) 0 funs in
   let result_of (name, f, x) =
-    printf "%10s: %!" (if name = "" then default_f_name else name);
-    let out = if style = Nil then null_printer else make_printer 12 in
+    printf "%*s: %!" length_name (if name = "" then default_f_name else name);
+    let out = if style = Nil then null_printer
+              else make_printer (length_name + 2) in
     let bm = test out ?min_count ?min_cpu ~style ?fwidth ?fdigits
       ~repeat name f x in
     (name, bm) in
@@ -489,7 +492,9 @@ let by_rates (_,_,r1,_) (_,_,r2,_) = compare (r1:float) r2
 
 (* Check whether two rates are significantly different.  With a small
    [significance], a [true] returned value means that the rates are
-   significantly different. *)
+   significantly different.  [n1] is the number of repetitions of the
+   test1, [r1] is its mean rate and [s1] its standard deviation.
+   [n2], [r2] and [s2] are similar for the test2. *)
 let different_rates significance  n1 r1 s1  n2 r2 s2 =
   assert(n1 > 0 && n2 > 0);
   if n1 = 1 && n2 = 1 then true (* no info about distribution, assume

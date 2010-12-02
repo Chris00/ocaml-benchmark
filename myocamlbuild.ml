@@ -8,9 +8,12 @@ dispatch begin function
 | After_rules ->
     ocaml_lib "benchmark";
 
-    flag ["compile"; "ocaml"; "use_pcre"] (S[A"-I"; A"+pcre"]);
-    flag ["link"; "program"; "ocaml"; "byte"; "use_pcre"] (S[A"pcre.cma"]);
-    flag ["link"; "program"; "ocaml"; "native"; "use_pcre"] (S[A"pcre.cmxa"]);
+    let pcre = [A"-I"; A"+pcre"] in
+    flag ["compile"; "ocaml"; "use_pcre"] (S pcre);
+    flag ["link"; "program"; "ocaml"; "byte"; "use_pcre"]
+      (S(pcre @ [A"pcre.cma"]));
+    flag ["link"; "program"; "ocaml"; "native"; "use_pcre"]
+      (S(pcre @ [A"pcre.cmxa"]));
 
     let examples_rule ext =
       let examples =
