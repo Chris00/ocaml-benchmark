@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.2 2004-08-20 18:26:19 chris_77 Exp $
+# $Id: Makefile,v 1.3 2004-08-20 19:48:38 chris_77 Exp $
 
 PKGNAME	   = $(shell grep "name" META | sed -e "s/.*\"\([^\"]*\)\".*/\1/")
 PKGVERSION = $(shell grep "version" META | sed -e "s/.*\"\([^\"]*\)\".*/\1/")
@@ -102,13 +102,19 @@ doc: $(DOCFILES) $(CMI_FILES)
 		$(ODOC_OPT) $(DOCFILES) ; \
 	fi
 
+# Make.bat -- easy compilation on win32
+Make.bat:
+	$(MAKE) clean
+	$(MAKE) all | grep --invert-match "make" > $@
+
 # Make a tarball
 .PHONY: dist
-dist: $(DISTFILES)
+dist: $(DISTFILES) Make.bat
 	@ if [ -z "$(PKGNAME)" ]; then echo "PKGNAME not defined"; exit 1; fi
 	@ if [ -z "$(PKGVERSION)" ]; then \
 		echo "PKGVERSION not defined"; exit 1; fi
 	mkdir $(PKGNAME)-$(PKGVERSION) ; \
+	mv Make.bat $(PKGNAME)-$(PKGVERSION); \
 	cp -r $(DISTFILES) $(PKGNAME)-$(PKGVERSION)/; \
 	tar --exclude "CVS" --exclude ".cvsignore" --exclude "*~" \
 	   --exclude "*.cm{i,x,o,xa}" --exclude "*.o" \
@@ -137,7 +143,7 @@ publish: doc dist
 .PHONY: clean distclean
 clean:
 	rm -f *~ *.cmi *.cmo *.cmx *.cma *.cmxa *.a *.o *.tmp
-	rm -f $(PKGNAME)-$(PKGVERSION).tar.bz2
+	rm -f Make.bat $(PKGNAME)-$(PKGVERSION).tar.bz2
 	rm -rf doc/
 	cd examples/; $(MAKE) clean
 
