@@ -2,6 +2,8 @@
                       INSTALLATION INSTRUCTIONS
 ----------------------------------------------------------------------
 
+* Unix (including MacosX)
+
 Build the library:
 
 	$ make
@@ -30,3 +32,10 @@ If installing a bundle of libraries, these same commands work in the
 parent directory, and furthermore, the ordering of the build due to
 the library interdependies are taken care of for you.
 
+
+* Windows
+
+A file "Make.bat" is provided for compilation (you may want to comment
+some lines if you do not have ocamlopt working).  You will have to
+install benchmark.mli, benchmark.cmi, benchmark.cma (and possibly)
+benchmark.cmxa to your desired location by hand.

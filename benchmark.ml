@@ -19,7 +19,7 @@
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the file
    LICENSE for more details.
 *)
-(* $Id: benchmark.ml,v 1.8 2004-09-02 20:09:02 chris_77 Exp $ *)
+(* $Id: benchmark.ml,v 1.9 2006-07-08 09:05:32 chris_77 Exp $ *)
 
 open Printf
 
@@ -45,13 +45,13 @@ let make n =
     iters = n }
 
 let add a b =
-  { wall = a.wall +. b.wall; utime = a.utime +. b.utime;
-    stime = a.stime +. b.stime; cutime = a.cutime +. b.cutime;
+  { wall = a.wall +. b.wall;       utime = a.utime +. b.utime;
+    stime = a.stime +. b.stime;    cutime = a.cutime +. b.cutime;
     cstime = a.cstime +. b.cstime; iters = a.iters + b.iters }
 
 let sub a b =
-  { wall = a.wall -. b.wall; utime = a.utime -. b.utime;
-    stime = a.stime -. b.stime; cutime = a.cutime -. b.cutime;
+  { wall = a.wall -. b.wall;       utime = a.utime -. b.utime;
+    stime = a.stime -. b.stime;    cutime = a.cutime -. b.cutime;
     cstime = a.cstime -. b.cstime; iters = a.iters - b.iters }
 
 let cpu_p b = b.utime +. b.stime
@@ -60,7 +60,7 @@ let cpu_a b = b.utime +. b.stime +. b.cutime +. b.cstime
 
 (* Return a formatted string representation of benchmark structure
    according to [style].  Default presentation parameters set here. *)
-let to_string ?(style = Auto) ?(fwidth = 5) ?(fdigits = 2) b =
+let to_string ?(style=Auto) ?(fwidth=5) ?(fdigits=2) b =
   let pt = cpu_p b
   and ct = cpu_c b in
   let style = (if style = Auto then if ct > 1e-10 then All else No_child
@@ -178,26 +178,28 @@ let throughput ?(repeat=1) tmax f x =
    with [name] according to the style defined by the optional
    parameters. *)
 let print1 ?(min_count=4) ?(min_cpu=0.4) ?(style=Auto) ?fwidth ?fdigits
-  bm name =
+    bm name =
   if style <> Nil then begin
     let print_t prefix b =
-      printf "%10s: %s\n" prefix (to_string ~style ?fwidth ?fdigits b);
+      printf "%11s %s\n" prefix (to_string ~style ?fwidth ?fdigits b);
       if b.iters < min_count || cpu_a b < min_cpu
         || (b.wall < 1. && b.iters < 1000)
       then print_string
         "            (warning: too few iterations for a reliable count)\n" in
+    (* FIXME: preceeding message should be changed if "not enough
+       time" (the routine is too fast)*)
     begin match bm with
     | [] -> printf "%10s: (no results)\n" name
     | b :: tl ->
-        print_t name b;
+        print_t (name ^ ":") b;
         List.iter (print_t "") tl
     end;
     flush stdout
   end
 
 (* Perl: timethese *)
-let testN ~title ~test default_f_name
-  ?min_count ?min_cpu ?(style=Auto) ?fwidth ?fdigits funs =
+let testN ~title ~test default_f_name  ?min_count ?min_cpu ?(style=Auto)
+    ?fwidth ?fdigits funs =
   if style <> Nil then begin
     let names = List.map (fun (a,_,_) -> a) funs in
     print_endline(title(String.concat ", " names));
@@ -225,6 +227,8 @@ let latency1 ?min_cpu ?style ?fwidth ?fdigits ?repeat  n ?(name="") f x =
   latencyN ?min_cpu ?style ?fwidth ?fdigits ?repeat n [(name, f, x)]
 
 
+(* FIXME: when a function is really fast, one often go (a lot) over
+   the fixed time witout any explanation *)
 let throughputN ?min_count ?style ?fwidth ?fdigits ?(repeat=1) n funs =
   let tmax = if n <= 0 then 3. (* default num of sec *) else float n in
   let title s =
@@ -384,7 +388,9 @@ let comp_rates cpu (name, bm) =
 (* Compare rates *)
 let by_rates (_,_,r1,_) (_,_,r2,_) = compare (r1:float) r2
 
-(* Check whether two rates are significantly different. *)
+(* Check whether two rates are significantly different.  With a small
+   [significance], a [true] returned value means that the rates are
+   significantly different. *)
 let different_rates significance  n1 r1 s1  n2 r2 s2 =
   assert(n1 > 0 && n2 > 0);
   if n1 = 1 && n2 = 1 then true (* no info about distribution, assume

@@ -1,2 +1,0 @@
-benchmark.cmo: benchmark.cmi 
-benchmark.cmx: benchmark.cmi 

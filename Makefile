@@ -1,21 +1,17 @@
-# $Id: Makefile,v 1.8 2005-04-05 20:47:54 chris_77 Exp $
+# $Id: Makefile,v 1.9 2006-07-08 09:05:32 chris_77 Exp $
 
 PKGNAME	   = $(shell grep "name" META | sed -e "s/.*\"\([^\"]*\)\".*/\1/")
 PKGVERSION = $(shell grep "version" META | sed -e "s/.*\"\([^\"]*\)\".*/\1/")
 
-SRC_WEB    = web
-SF_WEB     = /home/groups/o/oc/ocaml-benchmark/htdocs
+include Makefile.conf
 
-OCAMLC     = ocamlc
-OCAMLOPT   = ocamlopt
-OCAMLDEP   = ocamldep
-OCAMLDOC   = ocamldoc
-OCAMLFIND  = ocamlfind
-
-DISTFILES  = INSTALL LICENSE META Makefile README \
+DISTFILES  = INSTALL LICENSE META Makefile README Make.bat \
 		$(wildcard *.ml) $(wildcard *.mli) $(wildcard examples/)
 
+# Publish
 PKG_TARBALL  = ocaml-$(PKGNAME)-$(PKGVERSION).tar.bz2
+SRC_WEB    = web
+SF_WEB     = /home/groups/o/oc/ocaml-benchmark/htdocs
 
 default: all
 
@@ -36,7 +32,7 @@ ARCHIVE   := $(if $(ML_FILES),$(PKGNAME).cma,)
 XARCHIVE  := $(if $(ML_FILES),$(PKGNAME).cmxa,)
 
 PKGS = $(shell grep "requires" META | sed -e "s/.*\"\([^\"]*\)\".*/\1/")
-PKGS_CMA 	= $(addsuffix .cma, $(PKGS))
+PKGS_CMA  = $(addsuffix .cma, $(PKGS))
 
 export OCAMLPATH = ..
 
@@ -48,15 +44,15 @@ opt: $(XARCHIVE)
 # (Un)installation
 .PHONY: install uninstall
 install: all
-	ocamlfind remove $(PKGNAME); \
+	$(OCAMLFIND) remove $(PKGNAME); \
 	[ -f "$(XARCHIVE)" ] && \
 	extra="$(XARCHIVE) $(basename $(XARCHIVE)).a"; \
-	ocamlfind install $(if $(DESTDIR),-destdir $(DESTDIR)) $(PKGNAME) \
+	$(OCAMLFIND) install $(if $(DESTDIR),-destdir $(DESTDIR)) $(PKGNAME) \
 	$(MLI_FILES) $(CMI_FILES) $(ARCHIVE) META $$extra
 
 installbyte:
-	ocamlfind remove $(PKGNAME); \
-	ocamlfind install $(if $(DESTDIR),-destdir $(DESTDIR)) $(PKGNAME) \
+	$(OCAMLFIND) remove $(PKGNAME); \
+	$(OCAMLFIND) install $(if $(DESTDIR),-destdir $(DESTDIR)) $(PKGNAME) \
 	$(MLI_FILES) $(CMI_FILES) $(ARCHIVE) META
 
 
@@ -93,7 +89,7 @@ dist: $(DISTFILES) Make.bat
 	mv Make.bat $(PKGNAME)-$(PKGVERSION); \
 	cp -r $(DISTFILES) $(PKGNAME)-$(PKGVERSION)/; \
 	tar --exclude "CVS" --exclude ".cvsignore" --exclude "*~" \
-	   --exclude "*.cm{i,x,o,xa}" --exclude "*.o" \
+	  --exclude "*.cm{i,x,o,xa}" --exclude "*.o" \
 	  -jcvf $(PKG_TARBALL) $(PKGNAME)-$(PKGVERSION); \
 	rm -rf $(PKGNAME)-$(PKGVERSION)
 
@@ -138,10 +134,10 @@ upload: dist
 
 
 .PHONY: depend
-depend: .depend
-.depend: $(ML_FILES) $(MLI_FILES)
+depend: .depend.ocaml
+.depend.ocaml: $(ML_FILES) $(MLI_FILES)
 	$(OCAMLDEP) $(SYNTAX_OPTS) $(ML_FILES) $(MLI_FILES) > $@
-include .depend
+include .depend.ocaml
 
 ######################################################################
 .PHONY: clean distclean
