@@ -1,32 +1,31 @@
-# $Id: README,v 1.1.1.1 2004-08-18 21:29:29 chris_77 Exp $
----------------------------------------------------------
-Benchmark - measure/compare run-time of OCaml functions
----------------------------------------------------------
-Copyright 2002-2003, Doug Bagley
-http://www.bagley.org/~doug/ocaml/
+# $Id: README,v 1.2 2004-08-25 11:36:59 chris_77 Exp $
 
-This is beta software.
-If you would like to give me feedback on it, please send me mail.
-http://www.bagley.org/~doug/contact.shtml
-------------------------------------------------------------
 
+  Benchmark - measure/compare run-time of OCaml functions
+
+
+  Copyright 2004, Christophe Troestler
+
+  Copyright 2002-2003, Doug Bagley
+  http://www.bagley.org/~doug/ocaml/
+
+----------------------------------------------------------------------
 
 Benchmark provides functions to measure and compare the run-time of
-functions. It is based on the Perl module of the same name.
+functions.  It is inspired by the Perl module of the same name.
 
+See the file INSTALL for compiling and (un)installing.
 
-------------------------------------------------------------
+Send your comments, bug reports,... to chris_77@users.sourceforge.net
+
+----------------------------------------------------------------------
 
 This library is free software; you can redistribute it and/or modify
-it under the terms of the GNU Lesser Public License as published by
-the Free Software Foundation; either version 2 of the License, or
-(at your option) any later version.
+it under the terms of the GNU Lesser General Public License version
+2.1 as published by the Free Software Foundation, with the special
+exception on linking described in file LICENSE.
 
-This library is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU Lesser Public License for more details.
-
-You should have received a copy of the GNU Lesser Public License
-along with this library; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+This library is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the file
+LICENSE for more details.
