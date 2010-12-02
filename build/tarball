@@ -1,8 +1,9 @@
-#!/bin/sh
+#!/bin/bash
 
 # Make a tarball
+SCRIPT_DIR=`dirname $0`
 
-source tarball_name
+source $SCRIPT_DIR/tarball_name
 
 DISTFILES="INSTALL LICENSE META Makefile Makefile.conf README Make.bat \
 	*.ml *.mli examples/ \
