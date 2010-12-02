@@ -1,0 +1,4 @@
+<**/*.ml>: dtypes
+<examples/*.{byte,native}>: use_unix, use_benchmark
+<examples/{try-if,ar-ba}.{byte,native}>: use_bigarray
+<examples/regexps.*>: use_str, use_pcre

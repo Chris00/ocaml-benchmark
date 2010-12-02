@@ -27,7 +27,8 @@ let f2 () =
 open Benchmark
 
 let () =
-  let res = throughputN ~repeat:5 3 [("None", f0, ());
+  let res = throughputN ~repeat:5 3 [("no test", f0, ());
                                      ("try", f1, ());
                                      ("if", f2, ())  ] in
+  print_endline "Bigarray bound checking:";
   tabulate res

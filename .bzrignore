@@ -10,3 +10,10 @@ CVS
 *.exe
 *.com
 doc
+Make.bat
+_build
+_log
+*.byte
+*.native
+*.d.byte
+*.p.native

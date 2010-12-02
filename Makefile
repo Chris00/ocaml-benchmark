@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.11 2007-02-19 20:55:22 chris_77 Exp $
+# $Id: Makefile,v 1.12 2007-06-11 20:37:08 chris_77 Exp $
 
 OCAMLCFLAGS=-dtypes
 OCAMLOPTFLAGS=-dtypes
@@ -17,7 +17,10 @@ PKG_TARBALL  = ocaml-$(PKGNAME)-$(PKGVERSION).tar.gz
 SRC_WEB    = web
 SF_WEB     = /home/groups/o/oc/ocaml-benchmark/htdocs
 
-default: all
+default:
+	@echo -n "This project now uses 'ocamlbuild' for the build phase.  "
+	@echo -e "Please type\n\tocamlbuild all.otarget"
+	@echo "(If you nonetheless want to use 'make' type 'make all'.)"
 
 
 ######################################################################
