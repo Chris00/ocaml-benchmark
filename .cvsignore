@@ -1,3 +1,9 @@
+_log
+_build
+*.native
+*.byte
+*.d.native
+*.p.byte
 *.annot
 *.cmi
 *.cmo

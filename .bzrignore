@@ -1,3 +1,9 @@
+_log
+_build
+*.native
+*.byte
+*.d.native
+*.p.byte
 .cvsignore
 CVS
 *.cmi
@@ -11,9 +17,3 @@ CVS
 *.com
 doc
 Make.bat
-_build
-_log
-*.byte
-*.native
-*.d.byte
-*.p.native

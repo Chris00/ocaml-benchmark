@@ -1,3 +1,4 @@
 benchmark.cma
 benchmark.cmxa
-examples.otarget
+examples.byte
+examples.native

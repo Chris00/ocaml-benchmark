@@ -1,0 +1,25 @@
+#!/bin/sh
+
+# Make a tarball
+
+PKGNAME=`grep "name" META | sed -e "s/.*\"\([^\"]*\)\".*/\1/"`
+PKGVERSION=`grep "version" META | sed -e "s/.*\"\([^\"]*\)\".*/\1/"`
+PKG_TARBALL=ocaml-$PKGNAME-$PKGVERSION.tar.gz
+
+DISTFILES="INSTALL LICENSE META Makefile Makefile.conf README Make.bat \
+	*.ml *.mli examples/ \
+	all.itarget benchmark.mllib myocamlbuild.ml _tags"
+
+
+if [ -z "$PKGNAME" ]; then echo "PKGNAME not defined"; exit 1; fi
+if [ -z "$PKGVERSION" ]; then echo "PKGVERSION not defined"; exit 1; fi
+
+mkdir $PKGNAME-$PKGVERSION
+#mv Make.bat $PKGNAME-$PKGVERSION
+cp -r $DISTFILES $PKGNAME-$PKGVERSION
+
+tar --exclude "CVS" --exclude ".cvsignore" --exclude "*~" \
+  --exclude-from=.bzrignore \
+  -zcvf $PKG_TARBALL $PKGNAME-$PKGVERSION
+
+rm -rf $PKGNAME-$PKGVERSION
