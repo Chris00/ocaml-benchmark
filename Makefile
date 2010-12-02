@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.4 2004-08-20 21:06:14 chris_77 Exp $
+# $Id: Makefile,v 1.5 2004-08-25 11:38:05 chris_77 Exp $
 
 PKGNAME	   = $(shell grep "name" META | sed -e "s/.*\"\([^\"]*\)\".*/\1/")
 PKGVERSION = $(shell grep "version" META | sed -e "s/.*\"\([^\"]*\)\".*/\1/")
@@ -95,7 +95,8 @@ uninstall:
 	ocamlfind remove $(PKGNAME)
 
 # Make the examples
-.PHONY: ex
+.PHONY: ex examples
+ex: examples
 examples:
 	cd examples/; $(MAKE)
 
@@ -110,6 +111,7 @@ doc: $(DOCFILES) $(CMI_FILES)
 # Make.bat -- easy compilation on win32
 Make.bat:
 	$(MAKE) clean
+#	Filter out all "make" messages
 	$(MAKE) all | grep --invert-match "make" > $@
 
 # Make a tarball
