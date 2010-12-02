@@ -18,8 +18,8 @@
    WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the file
    LICENSE for more details.
- *)
-(* $Id: benchmark.ml,v 1.7 2004-08-25 11:43:47 chris_77 Exp $ *)
+*)
+(* $Id: benchmark.ml,v 1.8 2004-09-02 20:09:02 chris_77 Exp $ *)
 
 open Printf
 
@@ -454,7 +454,7 @@ let tabulate ?(no_parent=false) ?(confidence=0.95) results =
       let ratio =
         if i = j || is_nan row_rate || is_nan col_rate then "--" else
           let p = 100. *. row_rate /. col_rate -. 100. in
-          if p = 0 || different_rates (1. -. confidence)
+          if p = 0. || different_rates (1. -. confidence)
             row_n row_rate row_s  col_n col_rate col_s
           then sprintf " %.0f%%" p
           else sprintf " [%.0f%%]" p in
