@@ -22,63 +22,82 @@
       </td>
     </tr>
     <tr>
-<!--      <td style="vertical-align: top; width: 20px;"><a
- href="http://ocaml-benchmark.sourceforge.net/"><img
- style="border: 0px solid ; width: 84px; height: 46px;" alt="Home"
- src="Home.jpg"></a><br> -->
+      <!--      <td style="vertical-align: top; width: 20px;"><a
+		href="http://ocaml-benchmark.sourceforge.net/"><img
+		style="border: 0px solid ; width: 84px; height: 46px;"
+		alt="Home" src="Home.jpg"></a><br> -->
       <td style="vertical-align: top; width: 20px;"><a
  href="http://sourceforge.net/projects/ocaml-benchmark/"><img
  style="border: 0px solid ; width: 128px; height: 46px;" alt="Summary"
  src="Summary.jpg"></a><br>
-      <a href="doc/index.html"><img
+	<a href="doc/index.html"><img
  style="border: 0px solid ; width: 190px; height: 46px;"
- alt="Documentation" src="Documentation.jpg"></a><br>
-      <span style="font-family: helvetica,arial,sans-serif;"><a
+ alt="Documentation" src="Documentation.jpg"></a><br/>
+	<span style="font-family: helvetica,arial,sans-serif;"><a
  href="http://sourceforge.net/project/showfiles.php?group_id=117069"><img
  style="border: 0px solid ; width: 129px; height: 46px;" alt="Download"
- src="Download.jpg"></a><br>
-      <a href="LICENSE"><img
+ src="Download.jpg"></a><br/>
+	  <a href="LICENSE"><img
  style="border: 0px solid ; width: 101px; height: 46px;" alt="License"
- src="License.jpg"></a></span></td>
-      <td style="vertical-align: top;">OCaml Benchmark is a small
-module to benchmark running times of code.  It supersedes an earlier
-version by <a href="http://www.bagley.org/~doug/">Doug Bagley</a>.  A
-typical use looks like this:<br>
-      <br>
-      <code class="code">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span
- style="color: rgb(255, 0, 0); font-weight: bold;" class="keyword">open</span>&nbsp;<span
- style="color: rgb(51, 102, 255);" class="constructor">Benchmark</span><br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span
- style="color: rgb(255, 0, 0); font-weight: bold;" class="keyword">let</span>&nbsp;res&nbsp;=&nbsp;throughputN&nbsp;8&nbsp;[(<span
- style="color: rgb(204, 102, 0);" class="string">"foo"</span>,&nbsp;f,&nbsp;1000000);<br>
+ src="License.jpg"></a></span>
+      </td>
+      <td style="vertical-align: top;">
+	<p>
+	  OCaml Benchmark is a small module to benchmark running times
+	  of code.  It supersedes an earlier version
+	  by <a href="http://www.bagley.org/~doug/">Doug Bagley</a>.
+	  A typical use looks like this:<br/><br/>
+	  <code class="code">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+	    <span style="color: rgb(255, 0, 0); font-weight: bold;"
+		  class="keyword">open</span>
+	    <span style="color: rgb(51, 102, 255);"
+		  class="constructor">Benchmark</span><br/>
+	    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+	    <span style="color: rgb(255, 0, 0); font-weight: bold;"
+		  class="keyword">let</span>
+	    res&nbsp;=&nbsp;throughputN&nbsp;8&nbsp;[(<span
+ style="color: rgb(204, 102, 0);" class="string">"foo"</span>,&nbsp;f,&nbsp;1000000);<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span
  style="color: rgb(204, 102, 0);" class="string">"bar"</span>, g,
-1000000);<br>
+1000000);<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span
  style="color: rgb(204, 102, 0);" class="string">"baz"</span>, h,
 1000000) ]&nbsp;<span style="color: rgb(255, 0, 0); font-weight: bold;"
- class="keyword">in</span><br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;print_newline();<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;tabulate&nbsp;res<br>
-      <br>
-      </code>For a complete description of the functions, see the
-interface <a href="doc/Benchmark.html"><span
- style="font-family: courier new,courier,monospace;">Benchmark.mli</span></a>.
-Some examples are also included in the <a
- href="http://sourceforge.net/project/showfiles.php?group_id=117069">tarball</a>.
-If you have questions, suggestions, bugs,... you can contact me by
-email: <a
- href="mailto:chris_77@users.sourceforge.net?SUBJECT=OCaml%20Benchmark">chris_77@users.sourceforge.net</a><br>
-      <br>
-The code is released under the GNU Lesser General Public License (LGPL)
-with the same special
-exception as for the OCaml standard library (see the file <a
- href="LICENSE">LICENSE</a> for more details).</td>
+ class="keyword">in</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;print_newline();<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;tabulate&nbsp;res<br/>
+	    <br/>
+	  </code>
+	  For a complete description of the functions, see the
+	  interface <a href="doc/Benchmark.html"><span style="font-family:
+	  courier new,courier,monospace;">Benchmark.mli</span></a>.
+	  Some examples are also included in
+	  the <a href="http://sourceforge.net/project/showfiles.php?group_id=117069">tarball</a>.
+	</p>
+	<p>
+	  If you have questions, suggestions, bugs,... you can contact
+	  me by
+	  email: <a href="mailto:chris_77@users.sourceforge.net?SUBJECT=OCaml%20Benchmark">chris_77@users.sourceforge.net</a>.
+	  The source code is maintained under
+	  the <a href="http://bazaar-vcs.org/">bazaar</a> distributed
+	  version control system and stored in the
+	  SF <a href="http://sourceforge.net/svn/?group_id=117069">SVN
+	  repository</a>.  You can get it with
+	  <code class="code">bzr&nbsp;branch&nbsp;SF&nbsp;benchmark</code>
+	  and submit your patches with
+	  <code class="code">bzr&nbsp;send&nbsp;SF --mail-to=chris_77@users.sourceforge.net</code>
+	  where <code>SF</code> stands
+	  for <code>https://ocaml-benchmark.svn.sourceforge.net/svnroot/ocaml-benchmark/trunk/</code>.
+	</p>
+	<p>The code is released under the GNU Lesser General Public
+	  License (LGPL) with the same special exception as for the
+	  OCaml standard library (see the
+	  file <a href="LICENSE">LICENSE</a> for more
+	  details).</p></td>
     </tr>
   </tbody>
 </table>
-<br>
-<br>
+<br/><br/><br/><br/>
 
 <a href="http://sourceforge.net"><img
   src="http://sflogo.sourceforge.net/sflogo.php?group_id=117069&type=2"
