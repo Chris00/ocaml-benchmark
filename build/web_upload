@@ -6,7 +6,7 @@ SF_WEB=chris_77,ocaml-benchmark@frs.sourceforge.net:htdocs
 if [ -d doc ] ; then
     scp -r doc/ $SF_WEB	&& echo "*** Published documentation on SF"
 fi
-FILES=$SRC_WEB/*.html
+FILES="$SRC_WEB/*.html $SRC_WEB/*.css"
 if [ "$1" = "--all" ]; then
     FILES="$FILES $SRC_WEB/*.jpg LICENSE"
 fi
