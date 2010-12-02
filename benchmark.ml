@@ -42,8 +42,8 @@ let null_t =
   { wall = 0.; utime = 0.; stime = 0.; cutime = 0.; cstime = 0.; iters = 0L }
 
 let make n =
-  let tms = Unix.times () in
-  { wall = Unix.time ();
+  let tms = Unix.times() in
+  { wall = Unix.gettimeofday();
     utime = tms.Unix.tms_utime;   stime = tms.Unix.tms_stime;
     cutime = tms.Unix.tms_cutime; cstime = tms.Unix.tms_cstime;
     iters = n }
@@ -89,15 +89,15 @@ let to_string ?(style=Auto) ?(fwidth=5) ?(fdigits=2) b =
   let f x = sprintf "%*.*f" fwidth fdigits x in
   match style with
   | All ->
-      sprintf "%2.0f WALL (%s usr %s sys + %s cusr %s csys = %s CPU)%s"
-        b.wall (f b.utime) (f b.stime) (f b.cutime) (f b.cstime) (f(pt +. ct))
-        (iter_info pt)
+      sprintf "%s WALL (%s usr %s sys + %s cusr %s csys = %s CPU)%s"
+        (f b.wall) (f b.utime) (f b.stime) (f b.cutime) (f b.cstime)
+        (f(pt +. ct)) (iter_info pt)
   | No_child ->
-      sprintf "%2.0f WALL (%s usr + %s sys = %s CPU)%s"
-        b.wall (f b.utime) (f b.stime) (f pt) (iter_info pt)
+      sprintf "%s WALL (%s usr + %s sys = %s CPU)%s"
+        (f b.wall) (f b.utime) (f b.stime) (f pt) (iter_info pt)
   | No_parent ->
-      sprintf "%2.0f WALL (%s cusr + %s csys = %s CPU)%s"
-        b.wall (f b.cutime) (f b.cstime) (f ct) (iter_info ct)
+      sprintf "%s WALL (%s cusr + %s csys = %s CPU)%s"
+        (f b.wall) (f b.cutime) (f b.cstime) (f ct) (iter_info ct)
   | Nil -> ""
   | Auto -> assert false
 
