@@ -1,0 +1,10 @@
+#!/bin/sh
+
+BZR=bzr.dev
+USER=chris_77
+PROJECT=ocaml-benchmark
+SF=bzr.sourceforge.net/bzrroot
+
+# Started with SVN but allow bzrect bzr as well.  One needs to upgrade
+# the shared repository ${PROJECT}.$SF/$PROJECT to --rich-root-pack first.
+$BZR push bzr+ssh://${USER}@${PROJECT}.$SF/$PROJECT/trunk
