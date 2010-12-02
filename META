@@ -1,0 +1,7 @@
+# Specifications for the Benchmark module             -*-shell-script-*-
+name = "benchmark"
+version = "0.5"
+description = "Benchmark running times of code."
+requires = "unix"
+archive(byte) = "benchmark.cma"
+archive(native) = "benchmark.cmxa"

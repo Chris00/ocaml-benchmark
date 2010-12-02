@@ -1,0 +1,26 @@
+f_int   666 = 666
+f_int32 666 = 666
+f_int64 666 = 666
+
+ int-1-lat:  3 WALL ( 2.82 usr +  0.06 sys =  2.88 CPU) @ 347.22/s (n=1000)
+int-1-thru:  5 WALL ( 5.27 usr +  0.07 sys =  5.34 CPU) @ 344.94/s (n=1842)
+
+Throughputs for int, int32, int64 ...
+       int: 11 WALL (10.42 usr +  0.09 sys = 10.51 CPU) @ 345.67/s (n=3633)
+     int32: 11 WALL (10.18 usr +  0.17 sys = 10.35 CPU) @ 201.93/s (n=2090)
+     int64: 11 WALL (10.53 usr +  0.10 sys = 10.63 CPU) @ 187.30/s (n=1991)
+
+       Rate int64 int32   int
+int64 187/s    --   -7%  -46%
+int32 202/s    8%    --  -42%
+  int 346/s   85%   71%    --
+
+Latencies for 2000 iterations of int, int32, int64 ...
+       int:  6 WALL ( 5.73 usr +  0.05 sys =  5.78 CPU) @ 346.02/s (n=2000)
+     int32: 10 WALL ( 9.75 usr +  0.11 sys =  9.86 CPU) @ 202.84/s (n=2000)
+     int64: 11 WALL (10.49 usr +  0.17 sys = 10.66 CPU) @ 187.62/s (n=2000)
+
+       Rate int64 int32   int
+int64 188/s    --   -8%  -46%
+int32 203/s    8%    --  -41%
+  int 346/s   84%   71%    --

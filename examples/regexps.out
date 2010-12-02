@@ -1,0 +1,18 @@
+Pcre matches: 012345678 0123456789
+Str  matches: 012345678 0123456789
+
+Throughputs for pcre match, str match ...
+pcre match:  6 WALL ( 5.40 usr +  0.06 sys =  5.46 CPU) @ 11.54/s (n=63)
+ str match:  5 WALL ( 4.99 usr +  0.06 sys =  5.05 CPU) @  8.71/s (n=44)
+
+             Rate  str match pcre match
+ str match 8.71/s         --       -24%
+pcre match 11.5/s        32%         --
+
+Latencies for 100 iterations of pcre match, str match ...
+pcre match:  9 WALL ( 8.47 usr +  0.17 sys =  8.64 CPU) @ 11.57/s (n=100)
+ str match: 12 WALL (11.30 usr +  0.17 sys = 11.47 CPU) @  8.72/s (n=100)
+
+             Rate  str match pcre match
+ str match 8.72/s         --       -25%
+pcre match 11.6/s        33%         --
