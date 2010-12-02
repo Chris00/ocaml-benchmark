@@ -18,7 +18,7 @@ If you want to test it, use (requires findlib)
 
 	$ ocamkbuild examples/ar-ba.native --
 
-Install it:
+Install it (requires findlib):
 
 	$ ./build/install
 
@@ -26,7 +26,7 @@ Clean up the build and examples directory:
 
 	$ ocamlbuild -clean
 
-Remove the installed library:
+Remove the installed library (requires findlib):
 
 	$ ./build/uninstall
 

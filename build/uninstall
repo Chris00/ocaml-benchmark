@@ -1,0 +1,9 @@
+#!/bin/sh
+
+if [ -z "`which ocamlfind.opt`" ]; then
+    OCAMLFIND=ocamlfind
+else
+    OCAMLFIND=ocamlfind.opt
+fi
+
+$OCAMLFIND remove benchmark
