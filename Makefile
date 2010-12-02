@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.5 2004-08-25 11:38:05 chris_77 Exp $
+# $Id: Makefile,v 1.6 2004-09-02 20:08:01 chris_77 Exp $
 
 PKGNAME	   = $(shell grep "name" META | sed -e "s/.*\"\([^\"]*\)\".*/\1/")
 PKGVERSION = $(shell grep "version" META | sed -e "s/.*\"\([^\"]*\)\".*/\1/")
@@ -136,7 +136,8 @@ web: doc
 	  && echo "*** Published documentation on SF" ; \
 	fi
 	@ if [ -d $(SRC_WEB)/ ] ; then \
-	  scp $(SRC_WEB)/*.html shell.sf.net:$(SF_WEB) \
+	  scp $(SRC_WEB)/*.html $(SRC_WEB)/*.jpg LICENSE \
+	    shell.sf.net:$(SF_WEB) \
 	  && echo "*** Published web site ($(SRC_WEB)/) on SF" ; \
 	fi
 
