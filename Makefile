@@ -91,10 +91,8 @@ dist: $(DISTFILES) Make.bat
 	@ if [ -z "$(PKGVERSION)" ]; then \
 		echo "PKGVERSION not defined"; exit 1; fi
 	mkdir $(PKGNAME)-$(PKGVERSION) ; \
-	mv Make.bat $(PKGNAME)-$(PKGVERSION); \
 	cp -r $(DISTFILES) $(PKGNAME)-$(PKGVERSION)/; \
 	tar --exclude "CVS" --exclude ".cvsignore" --exclude "*~" \
-	  --exclude-from=.cvsignore \
 	  -zcvf $(PKG_TARBALL) $(PKGNAME)-$(PKGVERSION); \
 	rm -rf $(PKGNAME)-$(PKGVERSION)
 
