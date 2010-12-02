@@ -1,2 +1,6 @@
-numbers
-regexps
+*.cmi
+*.cmo
+*.cma
+*.cmx
+*.cmxa
+*.com
