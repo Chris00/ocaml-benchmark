@@ -27,11 +27,9 @@ opt:  $(EXAMPLES:.ml=.com)
 	$(OCAMLOPT) -o $@ $(ALL_OPTS) -linkpkg $(BENCHMARK:.cma=.cmxa) $<
 
 ######################################################################
-.PHONY: clean clobber
+.PHONY: clean
 
 clean:
-	rm -f $(EXAMPLES:.ml=.exe) $(EXAMPLES:.ml=.com) *.o *.cm[iox] *~ *.dat
-
-clobber: clean
-	rm -f $(EXAMPLES)
+	$(RM) -f $(EXAMPLES:.ml=.exe) $(EXAMPLES:.ml=.com)
+	$(RM) $(wildcard *.o *.cm[iox] *~ *.annot *.dat)
 
