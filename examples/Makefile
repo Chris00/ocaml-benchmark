@@ -3,22 +3,24 @@
 # Just type "make"!
 
 # Do not require that the package be installed to try the examples
-REQUIRES 	= "str unix pcre bigarray"
+REQUIRES 	= str unix bigarray
 BENCHMARK	= -I .. benchmark.cma
 
-EXAMPLES        := $(wildcard *.ml)
-PACKAGE_OPTS    := $(if $(REQUIRES), -package $(REQUIRES), )
-PREDICATE_OPTS  := $(if $(PREDICATES), -predicates $(PREDICATES), )
-ALL_OPTS	= -dtypes $(PACKAGE_OPTS) $(PREDICATE_OPTS)
+EXAMPLES        = $(wildcard *.ml)
+PACKAGE_OPTS    = $(if $(REQUIRES), -package "$(REQUIRES)", )
+PREDICATE_OPTS  = $(if $(PREDICATES), -predicates $(PREDICATES), )
+ALL_OPTS	= -annot $(PACKAGE_OPTS) $(PREDICATE_OPTS)
 
 OCAMLC		= ocamlfind ocamlc
 OCAMLOPT	= ocamlfind ocamlopt
 
 .PHONY: all
 
-all: byte opt
+all: byte opt native
 byte: $(EXAMPLES:.ml=.exe)
-opt:  $(EXAMPLES:.ml=.com)
+opt native:  $(EXAMPLES:.ml=.com)
+
+regexps.exe regexps.com: REQUIRES += pcre
 
 %.exe: %.ml ../benchmark.cma
 	$(OCAMLC) -o $@ $(ALL_OPTS) -linkpkg $(BENCHMARK) $<
