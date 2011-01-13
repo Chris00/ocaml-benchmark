@@ -13,11 +13,6 @@ let ba (a: vec) =
   let s = ref 0. in
   for i = 0 to n-1 do s := !s +. a.{i} done
 
-let ba_unbox (a: vec) =
-  let s = ref 0. in
-  for i = 0 to n-1 do s := !s +. a.{i} done;
-  !s *. 1.
-
 let ba_cl () =
   let s = ref 0. in
   for i = 0 to n-1 do s := !s +. a.{i} done
@@ -42,7 +37,6 @@ open Benchmark
 let () =
   let res = throughputN ~repeat:5 3
     [("ba", (fun () -> ba a), ());
-     ("ba_unbox", (fun () -> ignore(ba_unbox a)), ());
      ("ba_cl", ba_cl, ());
      ("ba_gen", (fun () -> ba_gen a), ());
      ("arr", (fun () -> arr b), ());
