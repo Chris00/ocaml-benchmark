@@ -1,7 +1,0 @@
-ar_ba.cmo: benchmark.cmi 
-ar_ba.cmx: benchmark.cmx 
-benchmark.cmo: benchmark.cmi 
-benchmark.cmx: benchmark.cmi 
-myocamlbuild.cmo: 
-myocamlbuild.cmx: 
-benchmark.cmi: 

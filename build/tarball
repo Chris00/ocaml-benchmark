@@ -3,11 +3,15 @@
 # Make a tarball
 SCRIPT_DIR=`dirname $0`
 
-source $SCRIPT_DIR/tarball_name
+oasis setup
 
-DISTFILES="INSTALL LICENSE META Makefile Makefile.conf README Make.bat \
+PKGNAME=$(oasis query name)
+PKGVERSION=$(oasis query version)
+PKG_TARBALL=$PKGNAME-$PKGVERSION.tar.gz
+
+DISTFILES="INSTALL.txt LICENSE.txt META Makefile Makefile.conf README.txt \
 	*.ml *.mli examples/ \
-	all.itarget benchmark.mllib myocamlbuild.ml _tags"
+	benchmark.mllib _tags setup.ml _oasis API.odocl"
 
 
 if [ -z "$PKGNAME" ]; then echo "PKGNAME not defined"; exit 1; fi
@@ -17,8 +21,6 @@ mkdir $PKGNAME-$PKGVERSION
 #mv Make.bat $PKGNAME-$PKGVERSION
 cp -r $DISTFILES $PKGNAME-$PKGVERSION
 
-tar --exclude "CVS" --exclude ".cvsignore" --exclude "*~" \
-  --exclude-from=.bzrignore \
-  -zcvf $PKG_TARBALL $PKGNAME-$PKGVERSION
+tar -zcvf $PKG_TARBALL $PKGNAME-$PKGVERSION
 
 rm -rf $PKGNAME-$PKGVERSION

@@ -1,5 +1,9 @@
 #!/bin/sh
 
-ocamlbuild -clean
+ocaml setup.ml -clean
+
+PKGNAME=$(oasis query name)
+PKGVERSION=$(oasis query version)
+PKG_TARBALL=$PKGNAME-$PKGVERSION.tar.gz
 
 if [ -e "$PKG_TARBALL" ]; then rm $PKG_TARBALL; fi

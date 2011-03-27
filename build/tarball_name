@@ -1,5 +1,0 @@
-#						-*-shell-script-*-
-
-PKGNAME=`grep "name" META | sed -e "s/.*\"\([^\"]*\)\".*/\1/"`
-PKGVERSION=`grep "version" META | sed -e "s/.*\"\([^\"]*\)\".*/\1/"`
-PKG_TARBALL=ocaml-$PKGNAME-$PKGVERSION.tar.gz

@@ -19,34 +19,34 @@
 *)
 
 (** This module implements benchmarking functions for measuring the
- * run-time of one or many functions using latency (multiple
- * repetitions) or throughput (repeat until some time period has
- * passed) tests.
+    run-time of one or many functions using latency (multiple
+    repetitions) or throughput (repeat until some time period has
+    passed) tests.
 
- * {b Examples:}
- * Run the function [f] with input [5000] for [10] iterations and
- * print the CPU times:
- * {[
- * Benchmark.latency1 10 f 5000			]}
- *
- * Run the tests [foo], [bar] and [baz] three times for at least [8]
- * seconds each, printing the results of each test, and then print a
- * cross tabulation of the results:
- * {[
- * open Benchmark
- * let res = throughputN ~repeat:3 8 [("foo", foo, 1000000);
- *                                    ("bar", bar, 2000000);
- *                                    ("baz", baz, 3000000); ] in
- * print_newline();
- * tabulate res	                                            ]}
- *
- * Time how long it takes to some piece of code:
- * {[
- * let t0 = Benchmark.make 0L in
- * (* do something here *)
- * let b = Benchmark.sub (Benchmark.make 0L) t0 in
- * print_endline "Benchmark results:";
- * print_endline (Benchmark.to_string b)                       ]}
+    {b Examples:}
+    Run the function [f] with input [5000] for [10] iterations and
+    print the CPU times:
+    {[
+    Benchmark.latency1 10 f 5000                        ]}
+
+    Run the tests [foo], [bar] and [baz] three times for at least [8]
+    seconds each, printing the results of each test, and then print a
+    cross tabulation of the results:
+    {[
+    open Benchmark
+    let res = throughputN ~repeat:3 8 [("foo", foo, 1000000);
+                                       ("bar", bar, 2000000);
+                                       ("baz", baz, 3000000); ] in
+    print_newline();
+    tabulate res                                                    ]}
+
+    Time how long it takes to some piece of code:
+    {[
+    let t0 = Benchmark.make 0L in
+    (* do something here *)
+    let b = Benchmark.sub (Benchmark.make 0L) t0 in
+    print_endline "Benchmark results:";
+    print_endline (Benchmark.to_string b)                       ]}
  *)
 
 
@@ -54,7 +54,7 @@
 
 (** The information returned by timing tests. *)
 type t = {
-  wall : float;	  (** Wallclock time (in seconds) *)
+  wall : float;   (** Wallclock time (in seconds) *)
   utime : float;  (** This process User CPU time (in seconds) *)
   stime : float;  (** This process System CPU time (in seconds) *)
   cutime : float; (** Child process User CPU time (in seconds) *)
@@ -64,11 +64,11 @@ type t = {
 
 (** Style of the output. *)
 type style =
-  | No_child	(** Do not print child CPU times *)
-  | No_parent	(** Do not print parent CPU times *)
-  | All		(** Print parent and child CPU times *)
-  | Auto	(** Same as [No_child] unless there is child CPU used *)
-  | Nil		(** Print nothing *)
+  | No_child    (** Do not print child CPU times *)
+  | No_parent   (** Do not print parent CPU times *)
+  | All         (** Print parent and child CPU times *)
+  | Auto        (** Same as [No_child] unless there is child CPU used *)
+  | Nil         (** Print nothing *)
 
 val make : Int64.t -> t
   (** [Benchmark.make n] create a new {!Benchmark.t} structure with
@@ -204,10 +204,10 @@ val tabulate : ?no_parent:bool -> ?confidence:float -> samples -> unit
     {!Benchmark.throughputN} with each function compared to all the
     others.  The table is of the type
 
-{[	      Rate name1 name2 ...   OR          s/iter name1 name2 ...
-	name1  #/s    --   r12             name1   #       --   r12
-	name2  #/s   r21    --             name2   #      r21    --
-	...                                ...                            ]}
+{[            Rate name1 name2 ...   OR          s/iter name1 name2 ...
+        name1  #/s    --   r12             name1   #       --   r12
+        name2  #/s   r21    --             name2   #      r21    --
+        ...                                ...                            ]}
 
     where name1, name2,... are the labels of the tests sorted from
     slowest to fastest and rij says how much namei is faster (or

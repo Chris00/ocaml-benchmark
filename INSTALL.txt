@@ -1,0 +1,50 @@
+
+                      INSTALLATION INSTRUCTIONS
+----------------------------------------------------------------------
+
+This package uses OASIS to generate its build system. See section OASIS for
+full information. 
+
+Dependencies
+============
+
+In order to compile this package, you will need:
+* ocaml for all, doc API
+* findlib
+
+Installing
+==========
+
+1. Run 'ocaml setup.ml -configure'
+2. Run 'ocaml setup.ml -build'
+3. Run 'ocaml setup.ml -install'
+
+If the libeary is already present on your computer, replace step 3
+with 'ocaml setup.ml -reinstall'.
+
+
+If you want to test it, use (requires findlib)
+
+	$ ocamlbuild examples.byte
+	$ ocamlbuild examples.native
+
+	The compiled programs are in _build/examples/.  You can run a
+	specific example, say examples/ar-ba.ml, in (say) native code
+	by issuing (you need not to compile the examples before if you
+	use this way):
+
+	$ ocamkbuild examples/ar-ba.native --
+
+Uninstalling
+============
+
+1. Go to the root of the package 
+2. Run 'ocaml setup.ml -uninstall'
+
+
+OASIS
+=====
+
+OASIS is a software that helps to write setup.ml using a simple '_oasis'
+configuration file. The generated setup only depends on standard OCaml
+installation, no additional library is required.

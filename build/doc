@@ -1,4 +1,0 @@
-#!/bin/sh
-
-
-ocamlbuild benchmark.docdir/index.html

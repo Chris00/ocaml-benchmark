@@ -1,0 +1,86 @@
+#                                                               -*-conf-*-
+OASISFormat: 0.2
+Name:        benchmark
+Version:     0.9
+Synopsis:    Benchmark running times of code.
+Authors:     Christophe Troestler
+License:     LGPL-3.0 with OCaml linking exception
+Plugins:     META (0.2)
+Homepage:    http://ocaml-benchmark.forge.ocamlcore.org/
+
+Library benchmark
+  Path:         .
+  BuildTools:   ocamlbuild
+  Modules:      Benchmark
+  BuildDepends: unix
+
+Document API
+  Title:           API reference for Benchmark
+  Type:            OCamlbuild (0.2)
+  InstallDir:      $docdir/api
+  BuildTools:      ocamldoc, ocamlbuild
+  XOCamlbuildPath: .
+  XOCamlbuildLibraries: benchmark
+
+# Examples
+Executable ar_ba
+  Path:         examples/
+  MainIs:       ar_ba.ml
+  BuildTools:   ocamlbuild
+  BuildDepends: benchmark, bigarray
+  Install:      false
+
+Executable composition
+  Path:         examples/
+  MainIs:	composition.ml
+  BuildTools:   ocamlbuild
+  BuildDepends: benchmark
+  Install:      false
+
+Executable let_try
+  Path:         examples/
+  MainIs:	let_try.ml
+  BuildTools:   ocamlbuild
+  BuildDepends: benchmark, bigarray
+  Install:      false
+
+Executable loops
+  Path:         examples/
+  MainIs:	loops.ml
+  BuildTools:   ocamlbuild
+  BuildDepends: benchmark
+  Install:      false
+
+Executable match_array
+  Path:         examples/
+  MainIs:	match_array.ml
+  BuildTools:   ocamlbuild
+  BuildDepends: benchmark
+  Install:      false
+
+Executable numbers
+  Path:         examples/
+  MainIs:	numbers.ml
+  BuildTools:   ocamlbuild
+  BuildDepends: benchmark
+  Install:      false
+
+Executable regexps
+  Path:         examples/
+  MainIs:	regexps.ml
+  BuildTools:   ocamlbuild
+  BuildDepends: benchmark, str, pcre
+  Install:      false
+
+Executable try_if
+  Path:         examples/
+  MainIs:	try_if.ml
+  BuildTools:   ocamlbuild
+  BuildDepends: benchmark, bigarray
+  Install:      false
+
+
+SourceRepository trunk
+  Type:       svn
+  Location:   svn://scm.ocamlcore.org/svn/ocaml-benchmark/trunk
+  Browser:    https://forge.ocamlcore.org/scm/browser.php?group_id=197

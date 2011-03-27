@@ -1,3 +1,4 @@
+#							-*-conf-unix-*-
 _log
 _build
 *.native
@@ -17,3 +18,12 @@ CVS
 *.com
 doc
 Make.bat
+# OASIS generated files (and unmodified)
+META
+_tags
+benchmark.mllib
+myocamlbuild.ml
+setup.data
+setup.log
+setup.ml
+API.odocl
