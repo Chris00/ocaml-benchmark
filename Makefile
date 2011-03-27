@@ -69,7 +69,9 @@ uninstall:
 .PHONY: ex examples
 ex: examples
 examples: all
-	cd examples/; $(MAKE)
+	$(MAKE) -C examples
+examples/%: all
+	$(MAKE) -C examples $*
 
 # Compile HTML documentation
 doc: $(DOCFILES) $(CMI_FILES)
