@@ -22,18 +22,9 @@ Installing
 If the libeary is already present on your computer, replace step 3
 with 'ocaml setup.ml -reinstall'.
 
+Some examples are compiled at the same time as the library.  The
+executables are in _build/examples/.
 
-If you want to test it, use (requires findlib)
-
-	$ ocamlbuild examples.byte
-	$ ocamlbuild examples.native
-
-	The compiled programs are in _build/examples/.  You can run a
-	specific example, say examples/ar-ba.ml, in (say) native code
-	by issuing (you need not to compile the examples before if you
-	use this way):
-
-	$ ocamkbuild examples/ar-ba.native --
 
 Uninstalling
 ============
