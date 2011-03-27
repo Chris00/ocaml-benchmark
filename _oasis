@@ -28,6 +28,7 @@ Executable ar_ba
   MainIs:       ar_ba.ml
   BuildTools:   ocamlbuild
   BuildDepends: benchmark, bigarray
+  CompiledObject: best
   Install:      false
 
 Executable composition
@@ -35,6 +36,7 @@ Executable composition
   MainIs:	composition.ml
   BuildTools:   ocamlbuild
   BuildDepends: benchmark
+  CompiledObject: best
   Install:      false
 
 Executable let_try
@@ -42,6 +44,7 @@ Executable let_try
   MainIs:	let_try.ml
   BuildTools:   ocamlbuild
   BuildDepends: benchmark, bigarray
+  CompiledObject: best
   Install:      false
 
 Executable loops
@@ -49,6 +52,7 @@ Executable loops
   MainIs:	loops.ml
   BuildTools:   ocamlbuild
   BuildDepends: benchmark
+  CompiledObject: best
   Install:      false
 
 Executable match_array
@@ -56,6 +60,7 @@ Executable match_array
   MainIs:	match_array.ml
   BuildTools:   ocamlbuild
   BuildDepends: benchmark
+  CompiledObject: best
   Install:      false
 
 Executable numbers
@@ -63,6 +68,7 @@ Executable numbers
   MainIs:	numbers.ml
   BuildTools:   ocamlbuild
   BuildDepends: benchmark
+  CompiledObject: best
   Install:      false
 
 Executable regexps
@@ -70,6 +76,7 @@ Executable regexps
   MainIs:	regexps.ml
   BuildTools:   ocamlbuild
   BuildDepends: benchmark, str, pcre
+  CompiledObject: best
   Install:      false
 
 Executable try_if
@@ -77,6 +84,7 @@ Executable try_if
   MainIs:	try_if.ml
   BuildTools:   ocamlbuild
   BuildDepends: benchmark, bigarray
+  CompiledObject: best
   Install:      false
 
 
