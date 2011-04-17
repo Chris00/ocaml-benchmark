@@ -1,7 +1,7 @@
 (* File: benchmark.mli
 
-   Modified in Aug. 2004 by Troestler Christophe
-   Christophe.Troestler(at)umh.ac.be
+   Copyright Aug. 2004-present by Troestler Christophe
+   Christophe.Troestler(at)umons.ac.be
 
    Copyright 2002-2003, Doug Bagley
    http://www.bagley.org/~doug/ocaml/
@@ -9,13 +9,13 @@
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public License
-   version 2.1 as published by the Free Software Foundation, with the
-   special exception on linking described in file LICENSE.
+   version 3 as published by the Free Software Foundation, with the
+   special exception on linking described in file LICENSE.txt.
 
    This library is distributed in the hope that it will be useful, but
    WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the file
-   LICENSE for more details.
+   LICENSE.txt for more details.
 *)
 
 (** This module implements benchmarking functions for measuring the

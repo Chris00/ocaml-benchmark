@@ -14,16 +14,16 @@ functions.  It is inspired by the Perl module of the same name.
 
 See the file INSTALL for compiling and (un)installing.
 
-Send your comments, bug reports,... to chris_77@users.sourceforge.net
+Send your comments, bug reports,... to Christophe.Troestler(at)umons.ac.be
 
 ----------------------------------------------------------------------
 
 This library is free software; you can redistribute it and/or modify
-it under the terms of the GNU Lesser General Public License version
-2.1 or later as published by the Free Software Foundation, with the
+it under the terms of the GNU Lesser General Public License version 3
+or later as published by the Free Software Foundation, with the
 special exception on linking described in file LICENSE.
 
 This library is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the file
-LICENSE for more details.
+LICENSE.txt for more details.
