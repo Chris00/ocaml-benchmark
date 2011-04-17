@@ -1,7 +1,7 @@
 #                                                               -*-conf-*-
 OASISFormat: 0.2
 Name:        benchmark
-Version:     0.9
+Version:     1.0
 Synopsis:    Benchmark running times of code.
 Authors:     Christophe Troestler
 License:     LGPL-3.0 with OCaml linking exception
