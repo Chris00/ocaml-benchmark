@@ -5,6 +5,9 @@ Version:     0.9
 Synopsis:    Benchmark running times of code.
 Authors:     Christophe Troestler
 License:     LGPL-3.0 with OCaml linking exception
+Description: This module provides a set of tools to measure the running times
+  of your functions and to easily compare the results.  A statistical
+  test is used to determine whether the results truly differ.
 Plugins:     META (0.2)
 Homepage:    http://ocaml-benchmark.forge.ocamlcore.org/
 
