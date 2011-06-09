@@ -189,10 +189,12 @@ let latency n out ?min_count ?min_cpu ~style ?fwidth ?fdigits
     ~repeat name f x =
   let rec loop nrep acc =
     if nrep < 1 then acc
-    else
+    else (
+      Gc.compact(); (* Reclaim memory to avoid undue GC during the test. *)
       let bm, _ = timeit n f x in
       print_run out ?min_count ?min_cpu ~style ?fwidth ?fdigits bm;
-      loop (nrep - 1) (bm :: acc) in
+      loop (nrep - 1) (bm :: acc)
+    ) in
   loop repeat []
 
 
@@ -219,7 +221,8 @@ let throughput tmin out ?min_count ?min_cpu ~style ?fwidth ?fdigits
       run_test nmin (max nmin n) bm total_wall in
   (* Repeat the test [nrep] times and return the list of results. *)
   let rec repeat_test nrep acc nmin niter wall_estim =
-    if nrep < 1 then acc else
+    if nrep < 1 then acc else (
+      Gc.compact(); (* Reclaim memory to avoid undue GC during the test. *)
       let bm, wall = run_test nmin niter null_t 0. in
       let wall_estim =
         if wall > wall_estim +. 60. then (
@@ -228,7 +231,8 @@ let throughput tmin out ?min_count ?min_cpu ~style ?fwidth ?fdigits
           wall
         )
         else wall_estim in
-      repeat_test (nrep - 1) (bm :: acc) nmin niter wall_estim in
+      repeat_test (nrep - 1) (bm :: acc) nmin niter wall_estim
+    ) in
   (* Estimate number of iter > [nmin] to have a running time >=
      [tmin].  The initial estimate is [n] running [tn] secs.  Linear
      estimates bear a 5% fudge to improve the overall responsiveness. *)
