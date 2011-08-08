@@ -14,7 +14,8 @@ WEB = ocaml-benchmark.forge.ocamlcore.org:/home/groups/ocaml-benchmark/htdocs/
 all byte native: configure
 	ocaml setup.ml -build
 
-configure: setup.ml
+configure: setup.data
+setup.data: setup.ml
 	ocaml $< -configure
 
 setup.ml: _oasis
