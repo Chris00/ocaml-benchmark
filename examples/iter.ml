@@ -16,6 +16,9 @@ let b = Array.make n 1.
 let arr f (x: float array) =
   for i = 0 to n-1 do f x.(i) done
 
+let arr_unsafe f (x: float array) =
+  for i = 0 to n-1 do f (Array.unsafe_get x i) done
+
 (* Lists *)
 let c = Array.to_list b
 
@@ -31,6 +34,7 @@ let () =
   let res = throughputN ~repeat:3 3
     [("ba", (fun () -> ba f a), ());
      ("arr", (fun () -> arr f b), ());
+     ("arr_unsafe", (fun () -> arr_unsafe f b), ());
      ("list", (fun () -> List.iter f c), ())
     ] in
   tabulate res
