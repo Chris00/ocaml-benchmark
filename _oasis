@@ -42,6 +42,14 @@ Executable composition
   CompiledObject: best
   Install:      false
 
+Executable iter
+  Path:         examples/
+  MainIs:	iter.ml
+  BuildTools:   ocamlbuild
+  BuildDepends: benchmark, bigarray
+  CompiledObject: best
+  Install:      false
+
 Executable let_try
   Path:         examples/
   MainIs:	let_try.ml

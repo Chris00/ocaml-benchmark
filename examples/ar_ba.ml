@@ -5,6 +5,8 @@ open Bigarray
 let n = 10_000
 let m = 1000
 
+(* Bigarrays
+ ***********************************************************************)
 type vec = (float, float64_elt, c_layout) Array1.t
 
 let a = Array1.create float64 c_layout n
@@ -30,6 +32,22 @@ let ba_alloc () =
     for i = 0 to n-1 do s := !s +. a.{i} done
   done
 
+let set_ba (a: vec) = for i = 0 to n-1 do a.{i} <- 1. done
+
+let set_ba_alloc () =
+  let a = Array1.create float64 c_layout n in
+  for j = 1 to m do
+    for i = 0 to n-1 do a.{i} <- 3. done
+  done
+
+let set_arr_alloc () =
+  let a = Array.create n 0. in
+  for j = 1 to m do
+    for i = 0 to n-1 do a.(i) <- 3. done
+  done
+
+(* Arrays
+ ***********************************************************************)
 let b = Array.make n 1.
 
 let arr (b: float array) =
@@ -47,21 +65,14 @@ let arr_alloc () =
     for i = 0 to n-1 do s := !s +. b.(i) done
   done
 
-let set_ba (a: vec) = for i = 0 to n-1 do a.{i} <- 1. done
-
 let set_arr (b: float array) = for i = 0 to n-1 do b.(i) <- 1. done
 
-let set_ba_alloc () =
-  let a = Array1.create float64 c_layout n in
-  for j = 1 to m do
-    for i = 0 to n-1 do a.{i} <- 3. done
-  done
+(* Lists
+ ***********************************************************************)
+let c = Array.to_list b
 
-let set_arr_alloc () =
-  let a = Array.create n 0. in
-  for j = 1 to m do
-    for i = 0 to n-1 do a.(i) <- 3. done
-  done
+let list c = ignore(List.fold_left ( +. ) 0. c)
+
 
 open Benchmark
 
@@ -73,6 +84,7 @@ let () =
      ("set_ba", (fun () -> set_ba a), ());
      ("arr", (fun () -> arr b), ());
      ("arr_cl", arr_cl, ());
+     ("list", (fun () -> list c), ());
      ("set_arr", (fun () -> set_arr b), ());
     ] in
   tabulate res;
