@@ -16,6 +16,10 @@ let ba (a: vec) =
   let s = ref 0. in
   for i = 0 to n-1 do s := !s +. a.{i} done
 
+let ba_u (a: vec) =
+  let s = ref 0. in
+  for i = 0 to n-1 do s := !s +. Array1.unsafe_get a i done
+
 let ba_cl () =
   let s = ref 0. in
   for i = 0 to n-1 do s := !s +. a.{i} done
@@ -40,12 +44,6 @@ let set_ba_alloc () =
     for i = 0 to n-1 do a.{i} <- 3. done
   done
 
-let set_arr_alloc () =
-  let a = Array.create n 0. in
-  for j = 1 to m do
-    for i = 0 to n-1 do a.(i) <- 3. done
-  done
-
 (* Arrays
  ***********************************************************************)
 let b = Array.make n 1.
@@ -55,8 +53,8 @@ let arr (b: float array) =
   for i = 0 to n-1 do s := !s +. b.(i) done
 
 let arr_u (b: float array) =
-	let s = ref 0. in
-	for i = 0 to n -1 do s := !s +. (Array.unsafe_get b (i)) done
+  let s = ref 0. in
+  for i = 0 to n - 1 do s := !s +. Array.unsafe_get b (i) done
 
 let arr_cl () =
   let s = ref 0. in
@@ -71,6 +69,12 @@ let arr_alloc () =
 
 let set_arr (b: float array) = for i = 0 to n-1 do b.(i) <- 1. done
 
+let set_arr_alloc () =
+  let a = Array.create n 0. in
+  for j = 1 to m do
+    for i = 0 to n-1 do a.(i) <- 3. done
+  done
+
 (* Lists
  ***********************************************************************)
 let c = Array.to_list b
@@ -83,6 +87,7 @@ open Benchmark
 let () =
   let res = throughputN ~repeat:3 3
     [("ba", (fun () -> ba a), ());
+     ("ba_u", (fun () -> ba_u a), ());
      ("ba_cl", ba_cl, ());
      ("ba_gen", (fun () -> ba_gen a), ());
      ("set_ba", (fun () -> set_ba a), ());
@@ -92,6 +97,7 @@ let () =
      ("list", (fun () -> list c), ());
      ("set_arr", (fun () -> set_arr b), ());
     ] in
+  print_endline "Sum of elements or set all elements to 3.:";
   tabulate res;
 
   let res = throughputN ~repeat:3 3
@@ -100,4 +106,5 @@ let () =
      ("arr", arr_alloc, ());
      ("set_arr", set_arr_alloc, ());
     ] in
+  print_endline "With allocation:";
   tabulate res;
