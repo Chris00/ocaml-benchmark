@@ -54,6 +54,10 @@ let arr (b: float array) =
   let s = ref 0. in
   for i = 0 to n-1 do s := !s +. b.(i) done
 
+let arr_u (b: float array) =
+	let s = ref 0. in
+	for i = 0 to n -1 do s := !s +. (Array.unsafe_get b (i)) done
+
 let arr_cl () =
   let s = ref 0. in
   for i = 0 to n-1 do s := !s +. b.(i) done
@@ -83,6 +87,7 @@ let () =
      ("ba_gen", (fun () -> ba_gen a), ());
      ("set_ba", (fun () -> set_ba a), ());
      ("arr", (fun () -> arr b), ());
+     ("arr_u", (fun () -> arr_u b), ());
      ("arr_cl", arr_cl, ());
      ("list", (fun () -> list c), ());
      ("set_arr", (fun () -> set_arr b), ());
