@@ -98,6 +98,14 @@ Executable try_if
   CompiledObject: best
   Install:      false
 
+Executable func_record
+  Path:         examples/
+  MainIs:	func_record.ml
+  BuildTools:   ocamlbuild
+  BuildDepends: benchmark
+  CompiledObject: best
+  Install:      false
+
 
 SourceRepository trunk
   Type:       svn
