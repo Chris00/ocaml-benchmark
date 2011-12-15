@@ -3,7 +3,7 @@ OASISFormat: 0.2
 Name:        benchmark
 Version:     1.0
 Synopsis:    Benchmark running times of code.
-Authors:     Christophe Troestler
+Authors:     Christophe Troestler <Christophe.Troestler@umons.ac.be>
 License:     LGPL-3.0 with OCaml linking exception
 Description: This module provides a set of tools to measure the running times
   of your functions and to easily compare the results.  A statistical
@@ -106,6 +106,14 @@ Executable func_record
   CompiledObject: best
   Install:      false
 
+# Tests
+Executable long_run
+  Path:           tests
+  MainIs:	  long_run.ml
+  BuildTools:     ocamlbuild
+  BuildDepends:   benchmark, unix
+  CompiledObject: best
+  Install:        false
 
 SourceRepository trunk
   Type:       svn

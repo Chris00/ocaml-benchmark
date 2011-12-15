@@ -181,7 +181,7 @@ type printer = {
 let print_run out ?(min_count=4L) ?(min_cpu=0.4) ~style ?fwidth ?fdigits b =
   out.print_indent(to_string ~style ?fwidth ?fdigits b ^ "\n");
   if b.iters < min_count || cpu_all b < min_cpu
-    || (b.wall < 1. && b.iters < 1000L)
+     || (b.wall < 1. && b.iters < 1000L)
   then out.print_indent "(warning: too few iterations for a reliable count)\n"
 
 
@@ -245,7 +245,7 @@ let throughput tmin out ?min_count ?min_cpu ~style ?fwidth ?fdigits
       let wall_estim = wall *. (1.05 *. tmin /. tn) in
       if wall_estim >= 60. then
         out.print_indent("(Estimated time for each run: "
-                          ^ (string_of_time wall_estim) ^ ")\n");
+                         ^ (string_of_time wall_estim) ^ ")\n");
       repeat_test repeat [] nmin (max nmin niter) wall_estim
     else
       (* lin estim *)
@@ -282,8 +282,11 @@ let throughput tmin out ?min_count ?min_cpu ~style ?fwidth ?fdigits
     else (
       if previous_took_long then out.print ")\n";
       if tn < tmin then estimate_niter n n tn wall (* tn > 0.1 *)
-      else  (* minimal [n] good for [tmin] *)
+      else ( (* minimal [n] good for [tmin], use the above measurement
+                for the first run. *)
+        print_run out ?min_count ?min_cpu ~style ?fwidth ?fdigits bm;
         repeat_test (repeat - 1) [bm] n n wall
+      )
     ) in
   min_iter 1L ~takes_long:false 0.
 
@@ -312,7 +315,7 @@ let testN ~test default_f_name  ?min_count ?min_cpu ~style
     let out = if style = Nil then null_printer
               else make_printer (length_name + 2) in
     let bm = test out ?min_count ?min_cpu ~style ?fwidth ?fdigits
-      ~repeat name f x in
+                  ~repeat name f x in
     (name, bm) in
   List.map result_of funs
 
