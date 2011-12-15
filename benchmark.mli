@@ -18,7 +18,9 @@
    LICENSE.txt for more details.
 *)
 
-(** This module implements benchmarking functions for measuring the
+(** Benchmark running times of code.
+
+    This module implements benchmarking functions for measuring the
     run-time of one or many functions using latency (multiple
     repetitions) or throughput (repeat until some time period has
     passed) tests.
