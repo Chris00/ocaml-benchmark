@@ -240,14 +240,16 @@ let throughput tmin out ?min_count ?min_cpu ~style ?fwidth ?fdigits
   let rec estimate_niter nmin n tn wall =
     if tn >= tpra then
       (* FIXME: *)
-      let niter = Int64.of_float(Int64.to_float n *. (1.05 *. tmin /. tn)) (* lin estim *) in
+      (* lin estim *)
+      let niter = Int64.of_float(Int64.to_float n *. (1.05 *. tmin /. tn)) in
       let wall_estim = wall *. (1.05 *. tmin /. tn) in
       if wall_estim >= 60. then
         out.print_indent("(Estimated time for each run: "
                           ^ (string_of_time wall_estim) ^ ")\n");
       repeat_test repeat [] nmin (max nmin niter) wall_estim
     else
-      let new_n = Int64.of_float(Int64.to_float n *. 1.05 *. tpra /. tn) (* lin estim *) in
+      (* lin estim *)
+      let new_n = Int64.of_float(Int64.to_float n *. 1.05 *. tpra /. tn) in
       let new_bn, new_wall = timeit new_n f x in
       let new_tn = cpu_process new_bn in
       let n = (* make sure we make progress *)
@@ -256,25 +258,29 @@ let throughput tmin out ?min_count ?min_cpu ~style ?fwidth ?fdigits
       estimate_niter nmin n new_tn new_wall in
   (* Determine the minimum number of iterations to run >= 0.1 sec
      (whatever [tmin]).  Inform the user if it takes too long. *)
-  let rec min_iter n ~takes_long total_wall =
+  let rec min_iter n ~takes_long:previous_took_long total_wall =
     if n <= 0L then
       failwith "throughput: number of iterations too large for Int64.t storage";
     let bm, wall = timeit n f x in
     let tn = cpu_process bm in
     let total_wall = total_wall +. wall in
     if tn < 0.1 then (
-      let takes_long =
-        if total_wall >= 30. then (
-          if takes_long then out.print "." else
-            out.print_indent("(Determining how many runs to perform, \
-		please be patient...");
-          true
+      let takes_long = total_wall >= 30. in
+      if takes_long then (
+        if total_wall >= 120. then (
+          out.print " canceled)\n";
+          failwith(sprintf "Benchmark.throughputN: wall time is %g while \
+            CPU time is %g.  Do you use \"sleep\"?" total_wall tn)
         )
-        else false in
-      min_iter (Int64.shift_left n 1) (* 2*n *) ~takes_long total_wall
+        else if previous_took_long then out.print "." else
+          out.print_indent("(Determining how many runs to perform, \
+            please be patient...");
+        );
+      let twice_n = Int64.shift_left n 1 in
+      min_iter twice_n ~takes_long total_wall
     )
     else (
-      if takes_long then out.print ")\n";
+      if previous_took_long then out.print ")\n";
       if tn < tmin then estimate_niter n n tn wall (* tn > 0.1 *)
       else  (* minimal [n] good for [tmin] *)
         repeat_test (repeat - 1) [bm] n n wall
