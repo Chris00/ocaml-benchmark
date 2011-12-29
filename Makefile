@@ -4,7 +4,8 @@ PKG_TARBALL = $(PKGNAME)-$(PKGVERSION).tar.gz
 
 DISTFILES  = INSTALL.txt LICENSE.txt META Makefile README.txt \
   benchmark.mllib _tags _oasis API.odocl \
-  $(wildcard *.ml) $(wildcard *.mli) $(wildcard examples/)
+  $(wildcard *.ml) $(wildcard *.mli) $(wildcard examples/*.ml) \
+  $(wildcard tests/*.ml)
 
 WEB = ocaml-benchmark.forge.ocamlcore.org:/home/groups/ocaml-benchmark/htdocs/
 
@@ -31,7 +32,7 @@ upload-doc: doc
 .PHONY: dist tar
 dist tar: $(DISTFILES)
 	mkdir $(PKGNAME)-$(PKGVERSION) ; \
-	cp -r $(DISTFILES) $(PKGNAME)-$(PKGVERSION)/; \
+	cp -a --parents $(DISTFILES) $(PKGNAME)-$(PKGVERSION)/; \
 	tar -zcvf $(PKG_TARBALL) $(PKGNAME)-$(PKGVERSION); \
 	rm -rf $(PKGNAME)-$(PKGVERSION)
 
