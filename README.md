@@ -1,22 +1,21 @@
 
-  Benchmark - measure/compare run-time of OCaml functions
-
+Benchmark - measure/compare run-time of OCaml functions
+=======================================================
 
   Copyright 2004-present, Christophe Troestler
 
   Copyright 2002-2003, Doug Bagley
   http://www.bagley.org/~doug/ocaml/
 
-----------------------------------------------------------------------
 
 Benchmark provides functions to measure and compare the run-time of
 functions.  It is inspired by the Perl module of the same name.
 
-See the file INSTALL for compiling and (un)installing.
+See the file INSTALL.txt for compiling and (un)installing.
 
-Send your comments, bug reports,... to Christophe.Troestler(at)umons.ac.be
 
-----------------------------------------------------------------------
+License
+-------
 
 This library is free software; you can redistribute it and/or modify
 it under the terms of the GNU Lesser General Public License version 3
