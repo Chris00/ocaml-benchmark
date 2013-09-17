@@ -11,6 +11,10 @@ Description: This module provides a set of tools to measure the running times
 Plugins:     META (0.2)
 Homepage:    http://ocaml-benchmark.forge.ocamlcore.org/
 
+Flag examples
+  Description:  Whether to compile the examples.
+  Default:      false
+
 Library benchmark
   Path:         .
   BuildTools:   ocamlbuild
@@ -27,6 +31,7 @@ Document API
 
 # Examples
 Executable ar_ba
+  Build$:       flag(examples)
   Path:         examples/
   MainIs:       ar_ba.ml
   BuildTools:   ocamlbuild
@@ -35,6 +40,7 @@ Executable ar_ba
   Install:      false
 
 Executable composition
+  Build$:       flag(examples)
   Path:         examples/
   MainIs:	composition.ml
   BuildTools:   ocamlbuild
@@ -43,6 +49,7 @@ Executable composition
   Install:      false
 
 Executable iter
+  Build$:       flag(examples)
   Path:         examples/
   MainIs:	iter.ml
   BuildTools:   ocamlbuild
@@ -51,6 +58,7 @@ Executable iter
   Install:      false
 
 Executable let_try
+  Build$:       flag(examples)
   Path:         examples/
   MainIs:	let_try.ml
   BuildTools:   ocamlbuild
@@ -59,6 +67,7 @@ Executable let_try
   Install:      false
 
 Executable loops
+  Build$:       flag(examples)
   Path:         examples/
   MainIs:	loops.ml
   BuildTools:   ocamlbuild
@@ -67,6 +76,7 @@ Executable loops
   Install:      false
 
 Executable match_array
+  Build$:       flag(examples)
   Path:         examples/
   MainIs:	match_array.ml
   BuildTools:   ocamlbuild
@@ -75,6 +85,7 @@ Executable match_array
   Install:      false
 
 Executable numbers
+  Build$:       flag(examples)
   Path:         examples/
   MainIs:	numbers.ml
   BuildTools:   ocamlbuild
@@ -83,6 +94,7 @@ Executable numbers
   Install:      false
 
 Executable regexps
+  Build$:       flag(examples)
   Path:         examples/
   MainIs:	regexps.ml
   BuildTools:   ocamlbuild
@@ -91,6 +103,7 @@ Executable regexps
   Install:      false
 
 Executable try_if
+  Build$:       flag(examples)
   Path:         examples/
   MainIs:	try_if.ml
   BuildTools:   ocamlbuild
@@ -99,6 +112,7 @@ Executable try_if
   Install:      false
 
 Executable func_record
+  Build$:       flag(examples)
   Path:         examples/
   MainIs:	func_record.ml
   BuildTools:   ocamlbuild
@@ -108,6 +122,7 @@ Executable func_record
 
 # Tests
 Executable long_run
+  Build$:         flag(tests)
   Path:           tests
   MainIs:	  long_run.ml
   BuildTools:     ocamlbuild
