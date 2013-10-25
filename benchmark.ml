@@ -311,7 +311,8 @@ let testN ~test default_f_name  ?min_count ?min_cpu ~style
   let length_name =
     List.fold_left (fun m (n,_,_) -> max m (String.length n)) 0 funs in
   let result_of (name, f, x) =
-    printf "%*s: %!" length_name (if name = "" then default_f_name else name);
+    if style <> Nil then
+      printf "%*s: %!" length_name (if name = "" then default_f_name else name);
     let out = if style = Nil then null_printer
               else make_printer (length_name + 2) in
     let bm = test out ?min_count ?min_cpu ~style ?fwidth ?fdigits
