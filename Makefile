@@ -9,6 +9,7 @@ DISTFILES  = INSTALL.txt LICENSE.txt META Makefile README.md \
 
 WEB = ocaml-benchmark.forge.ocamlcore.org:/home/groups/ocaml-benchmark/htdocs/
 
+SCP = scp -C -p
 
 .PHONY: all byte native configure doc install uninstall reinstall upload-doc
 
@@ -26,7 +27,7 @@ doc install uninstall reinstall: setup.log
 	ocaml setup.ml -$@
 
 upload-doc: doc
-	scp -C -p -r _build/API.docdir $(WEB)
+	$(SCP) -r _build/API.docdir $(WEB)
 
 # Make a tarball
 .PHONY: dist tar
@@ -40,7 +41,7 @@ dist tar: $(DISTFILES)
 .PHONY: web upload
 web: upload-doc
 	@ if [ -d web ] ; then \
-	  $(SCP) web/*.html web/*.css web/*.jpg LICENSE.txt $(WEB) \
+	  $(SCP) $(wildcard web/*.html web/*.css web/*.jpg) LICENSE.txt $(WEB) \
 	  && echo "*** Published web site." ; \
 	fi
 
