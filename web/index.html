@@ -1,24 +1,16 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<html>
-<head>
-  <meta content="text/html; charset=ISO-8859-1"
- http-equiv="content-type">
-  <title>Ocaml Benchmark module</title>
+<html><head>
+
+
+  <meta content="text/html; charset=ISO-8859-1" http-equiv="content-type"><title>Ocaml Benchmark module</title>
+  
   <meta content="Christophe Troestler" name="author">
-  <meta content="Module to benchmark running times of code"
- name="description">
-</head>
-<body alink="#ff6600" vlink="#999999" link="#e0991d"
- style="color: rgb(0, 0, 0); background-color: rgb(255, 255, 255);">
+  <meta content="Module to benchmark running times of code" name="description"></head><body style="color: rgb(0, 0, 0); background-color: rgb(255, 255, 255);" alink="#ff6600" link="#e0991d" vlink="#999999">
 <br>
-<table style="text-align: left; width: 100%;" border="0" cellspacing="2"
- cellpadding="2">
+<table style="text-align: left; width: 100%;" border="0" cellpadding="2" cellspacing="2">
   <tbody>
     <tr>
-      <td colspan="2" rowspan="1"
- style="vertical-align: top; text-align: center; white-space: nowrap;"><img
- style="width: 759px; height: 154px;" alt="OCaml Benchmark"
- src="OCamlBenchmark.jpg"><br>
+      <td colspan="2" rowspan="1" style="vertical-align: top; text-align: center; white-space: nowrap;"><img style="width: 759px; height: 154px;" alt="OCaml Benchmark" src="OCamlBenchmark.jpg"><br>
       </td>
     </tr>
     <tr>
@@ -26,64 +18,41 @@
 		href="http://ocaml-benchmark.sourceforge.net/"><img
 		style="border: 0px solid ; width: 84px; height: 46px;"
 		alt="Home" src="Home.jpg"></a><br> -->
-      <td style="vertical-align: top; width: 20px;"><a
- href="https://forge.ocamlcore.org/projects/ocaml-benchmark/"><img
- style="border: 0px solid ; width: 128px; height: 46px;" alt="Summary"
- src="Summary.jpg"></a><br>
-	<a href="doc/index.html"><img
- style="border: 0px solid ; width: 190px; height: 46px;"
- alt="Documentation" src="Documentation.jpg"></a><br/>
-	<span style="font-family: helvetica,arial,sans-serif;"><a
- href="https://forge.ocamlcore.org/frs/?group_id=197"><img
- style="border: 0px solid ; width: 129px; height: 46px;" alt="Download"
- src="Download.jpg"></a><br/>
-	  <a href="LICENSE"><img
- style="border: 0px solid ; width: 101px; height: 46px;" alt="License"
- src="License.jpg"></a></span>
+      <td style="vertical-align: top; width: 20px;"><a href="https://forge.ocamlcore.org/projects/ocaml-benchmark/"><img style="border: 0px solid ; width: 128px; height: 46px;" alt="Summary" src="Summary.jpg"></a><br>
+	<a href="doc/index.html"><img style="border: 0px solid ; width: 190px; height: 46px;" alt="Documentation" src="Documentation.jpg"></a><br>
+	<span style="font-family: helvetica,arial,sans-serif;"><a href="https://forge.ocamlcore.org/frs/?group_id=197"><img style="border: 0px solid ; width: 129px; height: 46px;" alt="Download" src="Download.jpg"></a><br>
+	  <a href="LICENSE"><img style="border: 0px solid ; width: 101px; height: 46px;" alt="License" src="License.jpg"></a></span>
       </td>
       <td style="vertical-align: top;">
 	<p>
 	  OCaml Benchmark is a small module to benchmark running times
 	  of code.  It supersedes an earlier version
 	  by Doug Bagley.
-	  A typical use looks like this:<br/><br/>
+	  A typical use looks like this:<br><br>
 	  <code class="code">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-	    <span style="color: rgb(255, 0, 0); font-weight: bold;"
-		  class="keyword">open</span>
-	    <span style="color: rgb(51, 102, 255);"
-		  class="constructor">Benchmark</span><br/>
+	    <span style="color: rgb(255, 0, 0); font-weight: bold;" class="keyword">open</span>
+	    <span style="color: rgb(51, 102, 255);" class="constructor">Benchmark</span><br>
 	    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-	    <span style="color: rgb(255, 0, 0); font-weight: bold;"
-		  class="keyword">let</span>
-	    res&nbsp;=&nbsp;throughputN&nbsp;8&nbsp;[(<span
- style="color: rgb(204, 102, 0);" class="string">"foo"</span>,&nbsp;f,&nbsp;1000000);<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span
- style="color: rgb(204, 102, 0);" class="string">"bar"</span>, g,
-1000000);<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span
- style="color: rgb(204, 102, 0);" class="string">"baz"</span>, h,
-1000000) ]&nbsp;<span style="color: rgb(255, 0, 0); font-weight: bold;"
- class="keyword">in</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;print_newline();<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;tabulate&nbsp;res<br/>
-	    <br/>
+	    <span style="color: rgb(255, 0, 0); font-weight: bold;" class="keyword">let</span>
+	    res&nbsp;=&nbsp;throughputN&nbsp;8&nbsp;[(<span style="color: rgb(204, 102, 0);" class="string">"foo"</span>,&nbsp;f,&nbsp;1000000);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span style="color: rgb(204, 102, 0);" class="string">"bar"</span>, g,
+1000000);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span style="color: rgb(204, 102, 0);" class="string">"baz"</span>, h,
+1000000) ]&nbsp;<span style="color: rgb(255, 0, 0); font-weight: bold;" class="keyword">in</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;print_newline();<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;tabulate&nbsp;res<br>
+	    <br>
 	  </code>
 	  For a complete description of the functions, see the
-	  interface <a href="doc/Benchmark.html"><span style="font-family:
-	  courier new,courier,monospace;">Benchmark.mli</span></a>.
+	  interface <a href="doc/Benchmark.html"><span style="font-family: courier new,courier,monospace;">Benchmark.mli</span></a>.
 	  Some examples are also included in
-	  the <a href="https://forge.ocamlcore.org/frs/?group_id=197"
-		 >tarball</a>.
+	  the <a href="https://forge.ocamlcore.org/frs/?group_id=197">tarball</a>.
 	</p>
 	<p>
 	  If you have questions, suggestions, bugs,... you can contact
 	  me by
 	  email: <a href="mailto:Christophe.Troestler@umons.ac.be?SUBJECT=OCaml%20Benchmark">Christophe.Troestler@umons.ac.be</a>.
-	  The source code is maintained under 
-	  the <a href="http://bazaar-vcs.org/">bazaar</a> distributed
-	  version control system and stored in the
-	  OCamlCore <a href="https://forge.ocamlcore.org/scm/viewvc.php/trunk/?root=ocaml-benchmark">SVN
-	  repository</a>.
+	  The source code is maintained in a <a href="http://git-scm.com/" target="_blank">Git</a> repository stored on <a href="https://github.com/Chris00/ocaml-benchmark">Github</a>.
 	</p>
 	<p>The code is released under the GNU Lesser General Public
 	  License (LGPL) with the same special exception as for the
@@ -94,4 +63,5 @@
   </tbody>
 </table>
 
-</html>
+
+</body></html>
