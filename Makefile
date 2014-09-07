@@ -21,7 +21,7 @@ setup.data: setup.ml
 	ocaml $< -configure --enable-examples --enable-tests
 
 setup.ml: _oasis
-	oasis setup
+	oasis setup -setup-update dynamic
 
 doc install uninstall reinstall: setup.log
 	ocaml setup.ml -$@
