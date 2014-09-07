@@ -19,7 +19,6 @@ Make.bat
 *.tar.gz
 # OASIS generated files (and unmodified)
 META
-_tags
 benchmark.mllib
 myocamlbuild.ml
 setup.data
