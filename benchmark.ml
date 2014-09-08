@@ -532,8 +532,8 @@ let string_of_rate display_as_rate =
       if display_as_rate then r, err else
         let n = 1. /. r in (n, n *. n *. err) (* Taylor of order 1 of 1/r *) in
     let p prec =
-      if sigma < 1e-15 then (sprintf " %0.*f%s" prec a per_sec, "")
-      else (sprintf " %0.*f+-" prec a, sprintf "%.*f%s" prec err per_sec) in
+      if sigma < 1e-15 then (sprintf " %.*f%s" prec a per_sec, "")
+      else (sprintf " %.*f+-" prec a, sprintf "%.*f%s" prec err per_sec) in
     if a >= 100. then p 0
     else if a >= 10. then p 1
     else if a >= 1.  then p 2
