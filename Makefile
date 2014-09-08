@@ -3,7 +3,7 @@ PKGVERSION  = $(shell oasis query version)
 PKG_TARBALL = $(PKGNAME)-$(PKGVERSION).tar.gz
 
 DISTFILES  = INSTALL.txt LICENSE.txt META Makefile README.md \
-  benchmark.mllib _tags _oasis API.odocl \
+  _tags _oasis \
   $(wildcard *.ml) $(wildcard *.mli) $(wildcard examples/*.ml) \
   $(wildcard tests/*.ml)
 
@@ -32,10 +32,12 @@ upload-doc: doc
 # Make a tarball
 .PHONY: dist tar
 dist tar: $(DISTFILES)
-	mkdir $(PKGNAME)-$(PKGVERSION) ; \
-	cp -a --parents $(DISTFILES) $(PKGNAME)-$(PKGVERSION)/; \
-	tar -zcvf $(PKG_TARBALL) $(PKGNAME)-$(PKGVERSION); \
-	rm -rf $(PKGNAME)-$(PKGVERSION)
+	mkdir $(PKGNAME)-$(PKGVERSION)
+	cp -a --parents $(DISTFILES) $(PKGNAME)-$(PKGVERSION)/
+#	Make a setup.ml independent of oasis
+	cd $(PKGNAME)-$(PKGVERSION)/ && oasis setup
+	tar -zcvf $(PKG_TARBALL) $(PKGNAME)-$(PKGVERSION)
+	$(RM) -rf $(PKGNAME)-$(PKGVERSION)
 
 # Release a Sourceforge tarball and publish the HTML doc
 .PHONY: web upload
