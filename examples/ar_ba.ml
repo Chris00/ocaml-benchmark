@@ -70,7 +70,7 @@ let arr_alloc () =
 let set_arr (b: float array) = for i = 0 to n-1 do b.(i) <- 1. done
 
 let set_arr_alloc () =
-  let a = Array.create n 0. in
+  let a = Array.make n 0. in
   for j = 1 to m do
     for i = 0 to n-1 do a.(i) <- 3. done
   done
