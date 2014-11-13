@@ -305,7 +305,7 @@ let make_printer nspace =
 let null_printer = { print_indent = (fun _ -> ());  print = (fun _ -> ()) }
 
 
-(* Generic interface for performing measurments on a list of functions *)
+(* Generic interface for performing measurements on a list of functions *)
 let testN ~test default_f_name  ?min_count ?min_cpu ~style
     ?fwidth ?fdigits ~repeat funs =
   let length_name =
@@ -614,3 +614,213 @@ let tabulate ?(no_parent=false) ?(confidence=0.95) results =
   row_formatter top_row;
   List.iter row_formatter rows;
   flush stdout
+
+(** {2 Bench Tree} *)
+
+module Tree = struct
+  (* print a line of "*" *)
+  let print_line fmt =
+    for _i = 1 to 80 do
+      Format.pp_print_char fmt '*';
+    done;
+    Format.pp_print_newline fmt ()
+
+  (* print a list on a formatter *)
+  let print_list ~sep pp_item fmt l =
+    let rec print fmt l = match l with
+      | x::((_::_) as tl) ->
+        pp_item fmt x;
+        Format.pp_print_string fmt sep;
+        Format.pp_print_cut fmt ();
+        print fmt tl
+      | [x] -> pp_item fmt x
+      | [] -> ()
+    in
+    print fmt l
+
+  (** {2 Bench Tree} *)
+
+  module SMap = Map.Make(String)
+
+  type single_bench = samples Lazy.t
+  type t =
+    | Multiple of t list * t SMap.t
+    | Bench of string * single_bench
+    | WithInt of (int -> t) * int list
+
+  let rec merge t1 t2 = match t1, t2 with
+    | Multiple (l, map), ((Bench _ | WithInt _) as x) ->
+        Multiple (x :: l, map)
+    | Multiple (l1, m1), Multiple (l2, m2) ->
+        let m = SMap.merge
+          (fun _ o1 o2 -> merge_opt o1 o2)
+          m1 m2
+        in
+        Multiple (l1 @ l2, m)
+    | (Bench _ | WithInt _), Multiple _ -> merge t2 t1
+    | Bench _, _
+    | WithInt _, _ ->
+        Multiple ([t1; t2], SMap.empty)  (* composite *)
+  and merge_opt o1 o2 = match o1, o2 with
+    | None, None -> None
+    | Some o, None
+    | None, Some o -> Some o
+    | Some o1, Some o2 -> Some (merge o1 o2)
+
+  let concat = function
+    | [] -> invalid_arg "concat"
+    | x :: tail -> List.fold_left merge x tail
+
+  let (>:) name f =
+    if name = "" then invalid_arg "(>:): empty name";
+    Bench (name,f)
+
+  let (>::) n t =
+    if n = "" then invalid_arg ">::";
+    Multiple ([], SMap.singleton n t)
+
+  let (>:::) n l =
+    if n = "" then invalid_arg ">:::";
+    Multiple ([], SMap.singleton n (concat l))
+
+  let with_int f = function
+    | [] -> invalid_arg "with_int: empty list"
+    | l -> WithInt (f, l)
+
+  (* print the structure of the tree, to show the user possible paths *)
+  let rec print fmt = function
+    | Multiple (l, m) ->
+        Format.fprintf fmt "@[<hv>%a%a@]"
+          print_map m
+          (print_list ~sep:"," print) l
+    | WithInt (f, l) ->
+        Format.fprintf fmt "@[<hv>[%a]@]"
+          (print_list ~sep:", " print_pair)
+          (List.map (fun n -> n, f n) l)
+    | Bench _ -> Format.fprintf fmt "<>"
+  and print_pair fmt (n,t) =
+    Format.fprintf fmt "@[<h>%d: %a@]" n print t
+  and print_map fmt m =
+    let first = ref true in
+    Format.pp_open_vbox fmt 0;
+    SMap.iter (fun n t ->
+      if !first then first := false else Format.pp_print_cut fmt ();
+      Format.fprintf fmt "@[%s.%a@]" n print t) m;
+    Format.pp_close_box fmt ()
+
+  (** {2 Path} *)
+
+  type path = string list
+
+  let print_path fmt path =
+    Format.fprintf fmt "@[<h>%a@]"
+      (print_list ~sep:"." Format.pp_print_string) path
+
+  (* Split the string along "." characters. Specification:
+     assert (parse_path "foo.bar" = ["foo";"bar"]);
+     assert (parse_path "foo" = ["foo"]);
+     assert (parse_path "" = [])
+  *)
+  let parse_path s =
+    let l = ref [] in
+    let n = String.length s in
+    let rec search prev i =
+      if i >= n then (
+        if i>prev then l := String.sub s prev (n-prev) :: !l ;
+        List.rev !l
+      )
+      else if s.[i] = '.' then (
+        l := (String.sub s prev (i-prev)) :: !l;  (* save substring *)
+        search (i+1) (i+1)
+      ) else search prev (i+1)
+    in search 0 0
+
+  (* prefix a tree with a path. Now the whole tree is only reachable
+      from this given path *)
+  let prefix path t = List.fold_right (fun s t -> s >:: t) path t
+
+  (** {2 Run} *)
+
+  (* run one atomic benchmark *)
+  let run_single_bench fmt path name b =
+    print_line fmt;
+    Format.fprintf fmt "run bench %a@." print_path (List.rev (name::path));
+    let res = Lazy.force b in
+    tabulate res
+
+  (* run all benchs *)
+  let rec run_all fmt path t = match t with
+    | Bench (name,f) -> run_single_bench fmt path name f
+    | Multiple (l, m) ->
+        List.iter (run_all fmt path) l;
+        SMap.iter
+          (fun n t' ->
+            let path = n :: path in
+            run_all fmt path t'
+          ) m
+    | WithInt (f, l) ->
+        List.iter (fun n -> run_all fmt (string_of_int n::path) (f n)) l
+
+  (* sprinf using regular Format printers, because [Format.sprintf]
+      doesn't have the right type *)
+  let sprintf_ format =
+    let b = Buffer.create 32 in
+    let fmt = Format.formatter_of_buffer b in
+    Format.kfprintf
+      (fun fmt -> Format.pp_print_flush fmt (); Buffer.contents b) fmt format
+
+  (* run all tests under a path.
+    @param path the current path from the root
+    @param remaining the path to the subtree of [t] we must run
+    @param t current sub-tree of benchmarks *)
+  let rec run_path_rec fmt path remaining t = match t, remaining with
+    | _, [] -> run_all fmt path t
+    | Multiple (_, m), s :: remaining' ->
+        begin try
+          let t' = SMap.find s m in
+          run_path_rec fmt (s::path) remaining' t'
+        with Not_found ->
+          let msg = sprintf_ "could not find %s under path %a"
+            s print_path (List.rev path) in
+          failwith msg
+        end
+    | WithInt (f,l), _ ->
+        List.iter
+          (fun n -> run_path_rec fmt (string_of_int n::path) remaining (f n))
+          l
+    | Bench _, _::_ -> ()
+
+  let run ?(path=[]) fmt t = run_path_rec fmt [] path t
+
+  let run_main ?(argv=Sys.argv) ?(out=Format.std_formatter) t =
+    let path = ref [] in
+    let do_print_tree = ref false in
+    let set_path_ s = path := parse_path s in
+    let options =
+      [ "-p", Arg.String set_path_, " only apply to subpath"
+      ; "--tree", Arg.Set do_print_tree, " print t tree"
+      ] in
+    try
+      Arg.parse_argv argv options (fun _ -> ()) "run benchmarks [options]";
+      if !do_print_tree
+        then Format.fprintf out "@[%a@]@." print t
+        else (
+          Format.printf "run on path %a@." print_path !path;
+          run ~path:!path out t   (* regular path *)
+        )
+    with Arg.Help msg ->
+      Format.pp_print_string out msg
+
+  (** {2 Global Registration} *)
+
+  (* the global tree of benchmarks *)
+  let tree = ref (Multiple ([], SMap.empty))
+
+  let global_bench () = !tree
+
+  let register new_t =
+    tree := merge !tree new_t
+
+  let run_global ?argv ?out () =
+    run_main ?argv ?out !tree
+end
