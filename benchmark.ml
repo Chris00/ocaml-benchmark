@@ -681,7 +681,7 @@ module Tree = struct
     SMap.iter (print_path fmt) m
   and print_path fmt name (Tree(b, m)) =
     (match b with
-     | None -> Format.fprintf fmt "@\n@[<2>- %s@\n" name
+     | None -> Format.fprintf fmt "@\n@[<2>- %s" name
      | Some b ->
         let n = number_of_benches b in
         Format.fprintf fmt "@\n@[<2>- %s: %i benchmark%s"
