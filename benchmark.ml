@@ -659,16 +659,16 @@ module Tree = struct
 
   let concat l = List.fold_left merge empty l
 
-  let ( >: ) name bench =
+  let ( @> ) name bench =
     let node = Tree(Some(Single bench), SMap.empty) in
     if name = "" then node
     else Tree(None, SMap.singleton name node)
 
-  let (>::) n t =
+  let (@>>) n t =
     if n = "" then t
     else Tree(None, SMap.singleton n t)
 
-  let (>:::) n l =
+  let (@>>>) n l =
     if n = "" then concat l
     else Tree(None, SMap.singleton n (concat l))
 
@@ -738,7 +738,7 @@ module Tree = struct
 
   (* prefix a tree with a path. Now the whole tree is only reachable
      from this given path *)
-  let prefix path t = List.fold_right (fun s t -> s >:: t) path t
+  let prefix path t = List.fold_right (fun s t -> s @>> t) path t
 
   let rec select path (Tree(b,m) as t) = match path with
     | [] -> t

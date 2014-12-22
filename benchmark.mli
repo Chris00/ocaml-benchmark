@@ -242,7 +242,7 @@ module Tree : sig
       with {!(>:)}), nodes are annotated with strings,
       and paths (see {!path}) are used to select subtrees. *)
 
-  val (>:) : string -> samples Lazy.t -> t
+  val ( @> ) : string -> samples Lazy.t -> t
   (** A (named) leaf of the benchmark tree. If evaluated, it simply
       returns samples (for instance using {!throughputN}).
 
@@ -257,11 +257,11 @@ module Tree : sig
         ) ;;
       ]} *)
 
-  val (>::) : string -> t -> t
+  val ( @>> ) : string -> t -> t
   (** [name >:: tree] makes [tree] accessible through the given [name],
       i.e., prefix all paths in the tree by [name].  It has no effect
       if [name = ""].
-      For instance [n1 >:: n2 >:: tree] makes a path [[n1;n2]] to the tree. *)
+      For instance [n1 @>> n2 @>> tree] makes a path [[n1;n2]] to the tree. *)
 
   val concat : t list -> t
   (** Merge the given trees (recursively). Merging proceeds by taking the union
@@ -273,8 +273,8 @@ module Tree : sig
 
       @raise Invalid_argument if the list is empty. *)
 
-  val (>:::) : string -> t list -> t
-  (** [name >::: l] is equivalent to [name >:: concat l]. It names a list of
+  val ( @>>> ) : string -> t list -> t
+  (** [name @>>> l] is equivalent to [name >:: concat l]. It names a list of
       trees, and is useful to build lists of benchmarks related to some
       common topic *)
 
