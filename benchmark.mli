@@ -228,14 +228,16 @@ val tabulate : ?no_parent:bool -> ?confidence:float -> samples -> unit
     @param confidence is used to determine the confidence interval for
     the Student's test.  (default: [0.95]).  *)
 
+
+
 (** {2 Benchmark Tree}
 
-Naming benchmarks within a hierarchy that allows to run them all, or
-filter them so that only a subset is run *)
+    Naming benchmarks within a hierarchy that allows to run them all,
+    or filter them so that only a subset is run.  *)
 
 module Tree : sig
   type t
-  (** A tree of benchmarks. Leaves are individual benchmarks (calls
+  (** A tree of benchmarks.  Leaves are individual benchmarks (calls
       to {!throughputN}, {!latencyN}, etc. wrapped
       with {!(>:)}), nodes are annotated with strings,
       and paths (see {!path}) are used to select subtrees. *)
@@ -243,31 +245,33 @@ module Tree : sig
   val (>:) : string -> samples Lazy.t -> t
   (** A (named) leaf of the benchmark tree. If evaluated, it simply
       returns samples (for instance using {!throughputN}).
-      @raise Invalid_argument if the name is ""
 
       Example (the lazy thunk is used to hide initialization code):
-        
+
       {[
         Benchmark.Tree.(
           "sort" >: lazy
-            (let a = Array.init 1_000_000 (fun i->i) in
+            (let a = Array.init 1_000_000 (fun i -> i) in
              Benchmark.throughput1 18 (Array.sort compare) a
             )
         ) ;;
       ]} *)
 
   val (>::) : string -> t -> t
-  (** [name >:: tree] makes [tree] accessible through the given [name].
-      For instance [n1 >:: n2 >:: tree] makes a path [[n1;n2]] to the tree.
-      @raise Invalid_argument if the name is "" *)
+  (** [name >:: tree] makes [tree] accessible through the given [name],
+      i.e., prefix all paths in the tree by [name].  It has no effect
+      if [name = ""].
+      For instance [n1 >:: n2 >:: tree] makes a path [[n1;n2]] to the tree. *)
 
   val concat : t list -> t
   (** Merge the given trees (recursively). Merging proceeds by taking the union
-      of all path heads in the list, and, for each such string [x], 
+      of all path heads in the list, and, for each such string [x],
       merging recursively all subtrees reachable under [x].
 
       For instance merging the trees [a.{b, c}], [a.b.d] and [{a.d, foo}]
-      will give the tree [{a.(b, b.d, c, d}, d}]. *)
+      will give the tree [{a.(b, b.d, c, d}, d}].
+
+      @raise Invalid_argument if the list is empty. *)
 
   val (>:::) : string -> t list -> t
   (** [name >::: l] is equivalent to [name >:: concat l]. It names a list of
@@ -290,18 +294,29 @@ module Tree : sig
   val print_path : Format.formatter -> path -> unit
 
   val parse_path : string -> path
-  (** split a string into a path at the "." separators.
+  (** Split a string into a path at the "." separators.
     Example: [parse_path "a.b.c"] returns [["a"; "b"; "c"]]. *)
 
   val prefix : path -> t -> t
-  (** Add the path as a prefix to the tree, similar to repeated calls to [>::] *)
+  (** Add the path as a prefix to the tree, similar to repeated
+      calls to [>::]. *)
+
+  val select : path -> t -> t
+  (** [select p t] return the subtree corresponding to the path [p].
+      Empty components [""] in the middle of the path are ignored.
+      Empty components [""] at the end of the path return only the
+      benchmarks at that level (i.e., one discards the benchmarks
+      pointed by paths of which [p] is a strict prefix). *)
+
 
   (** {2 Running} *)
 
-  val run : ?path:path ->  Format.formatter -> t -> unit
-  (** [run fmt t] runs all benchmarks of [t] and print the results to [fmt].
+  val run : ?path:path ->  ?out: Format.formatter -> t -> unit
+  (** [run t] runs all benchmarks of [t] and print the results to [fmt].
       @param path if provided, only the sub-tree corresponding to this path
-        is executed *)
+        is executed.
+      @param out The formatter on which to print the output.
+        Default: [Format.std_formatter].  *)
 
   val run_main :
     ?argv:string array ->
@@ -314,12 +329,12 @@ module Tree : sig
 
   (** {2 Global Registration} *)
 
-  val global_bench : unit -> t
-  (** Global [t] tree, built from calls to {!register}. It is useful
+  val global : unit -> t
+  (** Global tree, built from calls to {!register}.  It is useful
       to centralize all benchmarks at one place to, then, run them all *)
 
   val register : t -> unit
-  (** Register a benchmark to the global register of benchmarks *)
+  (** Register a benchmark to the global registry of benchmarks. *)
 
   val run_global :
     ?argv:string array ->

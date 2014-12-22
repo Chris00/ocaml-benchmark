@@ -1,7 +1,7 @@
 #                                                               -*-conf-*-
 OASISFormat: 0.4
 Name:        benchmark
-Version:     1.3
+Version:     1.3.1
 Synopsis:    Benchmark running times of code.
 Authors:     Christophe Troestler <Christophe.Troestler@umons.ac.be>
 License:     LGPL-3.0 with OCaml linking exception
@@ -10,6 +10,7 @@ Description: This module provides a set of tools to measure the running times
   test is used to determine whether the results truly differ.
 Plugins:     META (0.2)
 Homepage:    http://ocaml-benchmark.forge.ocamlcore.org/
+OCamlVersion: >= 3.12.0
 
 Flag examples
   Description:  Whether to compile the examples.
@@ -127,6 +128,15 @@ Executable long_run
   MainIs:	  long_run.ml
   BuildTools:     ocamlbuild
   BuildDepends:   benchmark, unix
+  CompiledObject: best
+  Install:        false
+
+Executable tree
+  Build$:         flag(tests)
+  Path:           tests
+  MainIs:	  tree.ml
+  BuildTools:     ocamlbuild
+  BuildDepends:   benchmark
   CompiledObject: best
   Install:        false
 
