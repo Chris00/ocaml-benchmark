@@ -717,10 +717,11 @@ module Tree = struct
 
   let of_bench bench = Tree(Some(Single bench), SMap.empty)
 
+  let name_nonempty t n = Tree(None, SMap.singleton n t)
+
   let name t n =
     (* Assume the name [n] is valid *)
-    if n = "" then t
-    else Tree(None, SMap.singleton n t)
+    if n = "" then t else name_nonempty t n
 
   (* prefix a tree with a path. Now the whole tree is only reachable
      from this given path *)
@@ -765,16 +766,25 @@ module Tree = struct
 
   (** {2 Selecting a subtree} *)
 
-  let rec select path (Tree(b,m) as t) = match path with
+  let rec filter path (Tree(b,m) as t) = match path with
     | [] -> t
     | [""] -> (* Only return the benches at this level (no sub-levels) *)
        Tree(b, SMap.empty)
-    | "" :: tl -> (* skip empty component NOT at the end *)
-       select tl t
+    | "" :: tl -> (* skip empty component NOT at the end, skip *)
+       filter tl t
+    | "*" :: tl ->
+       (* wildcard pattern, select all subtrees *)
+       let map_filter name t m =
+         let t = filter tl t in
+         (* Keep it only if not empty. *)
+         if is_empty t then m else SMap.add name t m in
+       Tree(b, SMap.fold map_filter m SMap.empty)
     | p0 :: tl ->
        match (try Some(SMap.find p0 m) with Not_found -> None) with
        | None -> empty
-       | Some t -> select tl t
+       | Some t -> let t = filter tl t in
+                  (* propagate up the emptiness *)
+                  if is_empty t then empty else name_nonempty t p0
 
   (** {2 Run} *)
 
@@ -798,11 +808,13 @@ module Tree = struct
     SMap.fold (fun name t is_out -> run_all fmt is_out (name :: rev_path) t)
               m is_previous_output
 
-  let run1 fmt t is_previous_output path =
-    run_all fmt is_previous_output (List.rev path) (select path t)
+  let run_1path fmt t is_previous_output path =
+    (* Filtering the tree keep its full paths so we initialize
+       [rev_path] to [[]]. *)
+    run_all fmt is_previous_output [] (filter path t)
 
   let run_paths fmt ~paths t =
-    let is_out = List.fold_left (run1 fmt t) false paths in
+    let is_out = List.fold_left (run_1path fmt t) false paths in
     if not is_out then
       match paths with
       | [] -> Format.fprintf fmt "No benchmark to run.@\n@."

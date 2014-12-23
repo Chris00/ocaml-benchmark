@@ -312,12 +312,15 @@ module Tree : sig
   (** Add the path as a prefix to the tree, similar to repeated
       calls to [>::]. *)
 
-  val select : path -> t -> t
-  (** [select p t] return the subtree corresponding to the path [p].
+  val filter : path -> t -> t
+  (** [filter p t] return the tree obtained by keeping all the paths
+      in [t] that match the path [p].
       Empty components [""] in the middle of the path are ignored.
       Empty components [""] at the end of the path return only the
       benchmarks at that level (i.e., one discards the benchmarks
-      pointed by paths of which [p] is a strict prefix). *)
+      pointed by paths of which [p] is a strict prefix).
+      The special path component ["*"] selects all subtrees at that
+      level (it acts as a wildcard).  *)
 
 
   (** {2 Running} *)
