@@ -618,6 +618,54 @@ let tabulate ?(no_parent=false) ?(confidence=0.95) results =
 (** {2 Bench Tree} *)
 
 module Tree = struct
+  (** {2 Path} *)
+
+  type path = string list
+
+  let print_path_element fmt p =
+    Format.pp_print_char fmt '.';
+    Format.pp_print_cut fmt ();
+    Format.pp_print_string fmt p
+
+  let print_path fmt path =
+    Format.fprintf fmt "@[<2>";
+    (match path with
+     | [] -> ()
+     | [p] -> Format.pp_print_string fmt p
+     | p :: tl -> Format.pp_print_string fmt p;
+                 List.iter (print_path_element fmt) tl);
+    Format.fprintf fmt "@]"
+
+  (* Split the string along "." characters. Specification:
+     assert (parse_path "foo.bar" = ["foo";"bar"]);
+     assert (parse_path "foo" = ["foo"]);
+     assert (parse_path "" = [""])
+  *)
+  let rev_parse_path check_name s =
+    let l = ref [] in
+    let i0 = ref 0 in
+    for i = 0 to String.length s - 1 do
+      if String.unsafe_get s i = '.' then (
+        let name = String.sub s !i0 (i - !i0) in
+        check_name name;
+        l := name :: !l;
+        i0 := i + 1;
+      )
+    done;
+    let name = if !i0 = 0 then s
+               else String.sub s !i0 (String.length s - !i0) in
+    check_name name;
+    name :: !l
+
+  let check_reserved name =
+    if name = "*" then invalid_arg "Name \"*\" is reserved for wildcard"
+
+  let check_nothing _ = ()
+
+  let parse_path s =
+    List.rev(rev_parse_path check_nothing s)
+
+
   (** {2 Bench Tree} *)
 
   module SMap = Map.Make(String)
@@ -660,36 +708,50 @@ module Tree = struct
 
   let concat l = List.fold_left merge empty l
 
-  let ( @> ) name bench =
-    let node = Tree(Some(Single bench), SMap.empty) in
-    if name = "" then node
-    else Tree(None, SMap.singleton name node)
+  let check_allowed_name n =
+    if n = "*" then invalid_arg "Name \"*\" is reserved for wildcard";
+    for i = 0 to String.length n - 1 do
+      if String.unsafe_get n i = '.' then
+        invalid_arg "Names cannot contain dots"
+    done
 
-  let (@>>) n t =
+  let of_bench bench = Tree(Some(Single bench), SMap.empty)
+
+  let name t n =
+    (* Assume the name [n] is valid *)
     if n = "" then t
     else Tree(None, SMap.singleton n t)
 
-  let (@>>>) n l =
-    if n = "" then concat l
-    else Tree(None, SMap.singleton n (concat l))
+  (* prefix a tree with a path. Now the whole tree is only reachable
+     from this given path *)
+  let prefix path t =
+    List.fold_right (fun n t -> check_reserved n; name t n) path t
+
+  let ( @>> ) n t =
+    let path = rev_parse_path check_reserved n in
+    List.fold_left name t path
+
+  let ( @> ) name bench = name @>> (of_bench bench)
+
+  let (@>>>) n l = n @>> (concat l)
 
   let with_int f = function
     | [] -> empty
     | l ->
-       let g i = string_of_int i @>> f i in
+       let g i = Tree(None, SMap.singleton (string_of_int i) (f i)) in
        concat (List.map g l)
 
   (* print the structure of the tree, to show the user possible paths *)
-  let rec print_map fmt m =
-    SMap.iter (print_path fmt) m
-  and print_path fmt name (Tree(b, m)) =
+  let rec print_tree_map fmt m =
+    SMap.iter (print_tree_path fmt) m
+  and print_tree_path fmt name (Tree(b, m)) =
     (match b with
      | None -> Format.fprintf fmt "@\n@[<2>- %s" name
      | Some b ->
         let n = number_of_benches b in
         Format.fprintf fmt "@\n@[<2>- %s: %i benchmark%s"
                        name n (if n > 1 then "s" else ""));
-    print_map fmt m;
+    print_tree_map fmt m;
     Format.fprintf fmt "@]"
 
   let print fmt (Tree(b, m)) =
@@ -699,49 +761,9 @@ module Tree = struct
         let n = number_of_benches b in
         Format.fprintf fmt "%i benchmark%s at root"
                        n (if n > 1 then "s" else ""));
-    print_map fmt m
+    print_tree_map fmt m
 
-
-  (** {2 Path} *)
-
-  type path = string list
-
-  let print_path_element fmt p =
-    Format.pp_print_char fmt '.';
-    Format.pp_print_cut fmt ();
-    Format.pp_print_string fmt p
-
-  let print_path fmt path =
-    Format.fprintf fmt "@[<2>";
-    (match path with
-     | [] -> ()
-     | [p] -> Format.pp_print_string fmt p
-     | p :: tl -> Format.pp_print_string fmt p;
-                 List.iter (print_path_element fmt) tl);
-    Format.fprintf fmt "@]"
-
-  (* Split the string along "." characters. Specification:
-     assert (parse_path "foo.bar" = ["foo";"bar"]);
-     assert (parse_path "foo" = ["foo"]);
-     assert (parse_path "" = [])
-  *)
-  let parse_path s =
-    let l = ref [] in
-    let n = String.length s in
-    let rec search prev i =
-      if i >= n then (
-        if i>prev then l := String.sub s prev (n-prev) :: !l ;
-        List.rev !l
-      )
-      else if s.[i] = '.' then (
-        l := (String.sub s prev (i-prev)) :: !l;  (* save substring *)
-        search (i+1) (i+1)
-      ) else search prev (i+1)
-    in search 0 0
-
-  (* prefix a tree with a path. Now the whole tree is only reachable
-     from this given path *)
-  let prefix path t = List.fold_right (fun s t -> s @>> t) path t
+  (** {2 Selecting a subtree} *)
 
   let rec select path (Tree(b,m) as t) = match path with
     | [] -> t

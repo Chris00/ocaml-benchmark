@@ -14,7 +14,7 @@ let () =
            Benchmark.latency1 18L (Array.sort compare) a )
  |> register;
 
-  "sort" @>> "add"
+  "sort.add"
   @> lazy (Benchmark.latency1 18L (fun x -> x + 1) 1)
   |> register
 

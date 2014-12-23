@@ -244,8 +244,11 @@ module Tree : sig
       select subtrees.  *)
 
   val ( @> ) : string -> samples Lazy.t -> t
-  (** A (named) leaf of the benchmark tree. If evaluated, it simply
-      returns samples (for instance using {!throughputN}).
+  (** [name @> bench] returns a (named) node of the benchmark tree.
+      If evaluated, it simply returns samples (for instance using
+      {!throughputN}).  If the name contains dots, it is interpreted
+      as a path.  For examle ["a.b" @> bench] is equivalent to ["a" @>>
+      "b" @> bench].
 
       Example (the lazy thunk is used to hide initialization code):
 
@@ -259,10 +262,15 @@ module Tree : sig
       ]} *)
 
   val ( @>> ) : string -> t -> t
-  (** [name >:: tree] makes [tree] accessible through the given [name],
-      i.e., prefix all paths in the tree by [name].  It has no effect
-      if [name = ""].
-      For instance [n1 @>> n2 @>> tree] makes a path [[n1;n2]] to the tree. *)
+  (** [name >:: tree] makes [tree] accessible through the given
+      [name], i.e., prefix all paths in the tree by [name].  It has no
+      effect if [name = ""].  If the name contains dots, it is
+      interpreted as a path.  For instance ["n1.n2" @>> tree] is
+      equivalent to ["n1" @>> "n2" @>> tree] and adds the path
+      [[n1;n2]] as a prefix to the tree.
+
+      @raise Invalid_argument is the name is invalid.  At least names
+      corresponding to OCaml identifiers are valid.  *)
 
   val concat : t list -> t
   (** Merge the given trees (recursively). Merging proceeds by taking the union
@@ -270,14 +278,16 @@ module Tree : sig
       merging recursively all subtrees reachable under [x].
 
       For instance merging the trees [a.{b, c}], [a.b.d] and [{a.d, foo}]
-      will give the tree [{a.(b, b.d, c, d}, d}].
-
-      @raise Invalid_argument if the list is empty. *)
+      will give the tree [{a.(b, b.d, c, d}, d}].  *)
 
   val ( @>>> ) : string -> t list -> t
   (** [name @>>> l] is equivalent to [name >:: concat l]. It names a list of
       trees, and is useful to build lists of benchmarks related to some
-      common topic *)
+      common topic.  If the name contains dots, it is interpreted
+      as a path.
+
+      @raise Invalid_argument is the name is invalid.  At least names
+      corresponding to OCaml identifiers are valid.  *)
 
   val with_int : (int -> t) -> int list -> t
   (** [with_int f l] parametrize trees with several integer values
