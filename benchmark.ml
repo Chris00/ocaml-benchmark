@@ -674,7 +674,9 @@ module Tree = struct
 
   let with_int f = function
     | [] -> empty
-    | l -> concat (List.map f l)
+    | l ->
+       let g i = string_of_int i @>> f i in
+       concat (List.map g l)
 
   (* print the structure of the tree, to show the user possible paths *)
   let rec print_map fmt m =
