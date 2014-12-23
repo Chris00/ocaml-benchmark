@@ -305,7 +305,7 @@ let make_printer nspace =
 let null_printer = { print_indent = (fun _ -> ());  print = (fun _ -> ()) }
 
 
-(* Generic interface for performing measurments on a list of functions *)
+(* Generic interface for performing measurements on a list of functions *)
 let testN ~test default_f_name  ?min_count ?min_cpu ~style
     ?fwidth ?fdigits ~repeat funs =
   let length_name =
@@ -614,3 +614,262 @@ let tabulate ?(no_parent=false) ?(confidence=0.95) results =
   row_formatter top_row;
   List.iter row_formatter rows;
   flush stdout
+
+(** {2 Bench Tree} *)
+
+module Tree = struct
+  (** {2 Path} *)
+
+  type path = string list
+
+  let print_path_element fmt p =
+    Format.pp_print_char fmt '.';
+    Format.pp_print_cut fmt ();
+    Format.pp_print_string fmt p
+
+  let print_path fmt path =
+    Format.fprintf fmt "@[<2>";
+    (match path with
+     | [] -> ()
+     | [p] -> Format.pp_print_string fmt p
+     | p :: tl -> Format.pp_print_string fmt p;
+                 List.iter (print_path_element fmt) tl);
+    Format.fprintf fmt "@]"
+
+  (* Split the string along "." characters. Specification:
+     assert (parse_path "foo.bar" = ["foo";"bar"]);
+     assert (parse_path "foo" = ["foo"]);
+     assert (parse_path "" = [""])
+  *)
+  let rev_parse_path check_name s =
+    let l = ref [] in
+    let i0 = ref 0 in
+    for i = 0 to String.length s - 1 do
+      if String.unsafe_get s i = '.' then (
+        let name = String.sub s !i0 (i - !i0) in
+        check_name name;
+        l := name :: !l;
+        i0 := i + 1;
+      )
+    done;
+    let name = if !i0 = 0 then s
+               else String.sub s !i0 (String.length s - !i0) in
+    check_name name;
+    name :: !l
+
+  let check_reserved name =
+    if name = "*" then invalid_arg "Name \"*\" is reserved for wildcard"
+
+  let check_nothing _ = ()
+
+  let parse_path s =
+    List.rev(rev_parse_path check_nothing s)
+
+
+  (** {2 Bench Tree} *)
+
+  module SMap = Map.Make(String)
+
+  (* A collection of benchmarks with fast concatenation. *)
+  type benches = Single of samples Lazy.t
+               | Pair of benches * benches
+
+  let merge_benches_opt b1 b2 = match b1, b2 with
+    | None, b | b, None -> b
+    | Some b1, Some b2 -> Some(Pair(b1, b2))
+
+  let rec number_of_benches = function
+    | Single _ -> 1
+    | Pair(b1, b2) -> number_of_benches b1 + number_of_benches b2
+
+  let rec benches_iter benches ~f = match benches with
+    | Single b -> f b
+    | Pair(b1, b2) -> benches_iter b1 ~f;  benches_iter b2 ~f
+
+  type t = Tree of benches option * t SMap.t
+  (* benches at that level + named sublevels.  The name "" is
+     understood as "at this level" and so will not be present in the
+     map. *)
+
+  let empty = Tree(None, SMap.empty)
+
+  let is_empty (Tree(b, m)) =
+    b = None && SMap.is_empty m
+
+  let rec merge (Tree(b1, m1)) (Tree(b2, m2)) : t =
+    let b = merge_benches_opt b1 b2 in
+    let m = SMap.merge merge_opt m1 m2 in
+    Tree(b, m)
+  and merge_opt _ o1 o2 = match o1, o2 with
+    | None, None -> None
+    | Some o, None
+    | None, Some o -> Some o
+    | Some o1, Some o2 -> Some (merge o1 o2)
+
+  let concat l = List.fold_left merge empty l
+
+  let check_allowed_name n =
+    if n = "*" then invalid_arg "Name \"*\" is reserved for wildcard";
+    for i = 0 to String.length n - 1 do
+      if String.unsafe_get n i = '.' then
+        invalid_arg "Names cannot contain dots"
+    done
+
+  let of_bench bench = Tree(Some(Single bench), SMap.empty)
+
+  let name_nonempty t n = Tree(None, SMap.singleton n t)
+
+  let name t n =
+    (* Assume the name [n] is valid *)
+    if n = "" then t else name_nonempty t n
+
+  (* prefix a tree with a path. Now the whole tree is only reachable
+     from this given path *)
+  let prefix path t =
+    List.fold_right (fun n t -> check_reserved n; name t n) path t
+
+  let ( @>> ) n t =
+    let path = rev_parse_path check_reserved n in
+    List.fold_left name t path
+
+  let ( @> ) name bench = name @>> (of_bench bench)
+
+  let (@>>>) n l = n @>> (concat l)
+
+  let with_int f = function
+    | [] -> empty
+    | l ->
+       let g i = Tree(None, SMap.singleton (string_of_int i) (f i)) in
+       concat (List.map g l)
+
+  (* print the structure of the tree, to show the user possible paths *)
+  let rec print_tree_map fmt m =
+    SMap.iter (print_tree_path fmt) m
+  and print_tree_path fmt name (Tree(b, m)) =
+    (match b with
+     | None -> Format.fprintf fmt "@\n@[<2>- %s" name
+     | Some b ->
+        let n = number_of_benches b in
+        Format.fprintf fmt "@\n@[<2>- %s: %i benchmark%s"
+                       name n (if n > 1 then "s" else ""));
+    print_tree_map fmt m;
+    Format.fprintf fmt "@]"
+
+  let print fmt (Tree(b, m)) =
+    (match b with
+     | None -> Format.fprintf fmt "No benchmark at root"
+     | Some b ->
+        let n = number_of_benches b in
+        Format.fprintf fmt "%i benchmark%s at root"
+                       n (if n > 1 then "s" else ""));
+    print_tree_map fmt m
+
+  (** {2 Selecting a subtree} *)
+
+  let rec filter path (Tree(b,m) as t) = match path with
+    | [] -> t
+    | [""] -> (* Only return the benches at this level (no sub-levels) *)
+       Tree(b, SMap.empty)
+    | "" :: tl -> (* skip empty component NOT at the end, skip *)
+       filter tl t
+    | "*" :: tl ->
+       (* wildcard pattern, select all subtrees *)
+       let map_filter name t m =
+         let t = filter tl t in
+         (* Keep it only if not empty. *)
+         if is_empty t then m else SMap.add name t m in
+       Tree(b, SMap.fold map_filter m SMap.empty)
+    | p0 :: tl ->
+       match (try Some(SMap.find p0 m) with Not_found -> None) with
+       | None -> empty
+       | Some t -> let t = filter tl t in
+                  (* propagate up the emptiness *)
+                  if is_empty t then empty else name_nonempty t p0
+
+  (** {2 Run} *)
+
+  let print_sep fmt =
+    Format.pp_print_string fmt "***********************************\
+                                ***********************************";
+    Format.pp_print_newline fmt ()
+
+  let run_bench_path fmt is_previous_output rev_path = function
+    | None -> is_previous_output
+    | Some b ->
+       if is_previous_output then print_sep fmt;
+       Format.fprintf fmt "*** Run benchmarks for path \"%a\"@\n@."
+                      print_path (List.rev rev_path);
+       benches_iter b ~f:(fun b -> tabulate (Lazy.force b));
+       true
+
+  let rec run_all fmt is_previous_output rev_path (Tree(b, m)) =
+    let is_previous_output =
+      run_bench_path fmt is_previous_output rev_path b in
+    SMap.fold (fun name t is_out -> run_all fmt is_out (name :: rev_path) t)
+              m is_previous_output
+
+  let run_1path fmt t is_previous_output path =
+    (* Filtering the tree keep its full paths so we initialize
+       [rev_path] to [[]]. *)
+    run_all fmt is_previous_output [] (filter path t)
+
+  let run_paths fmt ~paths t =
+    let is_out = List.fold_left (run_1path fmt t) false paths in
+    if not is_out then
+      match paths with
+      | [] -> Format.fprintf fmt "No benchmark to run.@\n@."
+      | p0 :: tl ->
+         Format.fprintf fmt "No benchmark to run for paths ";
+         print_path fmt p0;
+         List.iter (fun p -> print_path fmt p;
+                          Format.pp_print_string fmt ", ") tl;
+         Format.fprintf fmt ".@\n@."
+
+  type arg_state = { mutable paths : path list;
+                     mutable print_tree : bool;
+                   }
+  let arg () =
+    let st = { paths = [];  print_tree = false } in
+    let add_path s = st.paths <- parse_path s :: st.paths in
+    let options =
+      [ "--path", Arg.String add_path, " only apply to subpath"
+      ; "-p", Arg.String add_path, " short option for --path"
+      ; "--tree", Arg.Unit (fun () -> st.print_tree <- true), " print the tree"
+      ] in
+    st, options
+
+  let run ?arg ?(paths=[]) ?(out=Format.std_formatter) t =
+    match arg with
+    | None -> run_paths out ~paths t
+    | Some st ->
+      if st.print_tree then
+        Format.fprintf out "@[%a@]@." print t
+      else
+        run_paths out ~paths:(paths @ List.rev st.paths) t
+
+  (** {2 Global Registration} *)
+
+  (* the global tree of benchmarks *)
+  let tree = ref empty
+
+  let global () = !tree
+
+  let register new_t =
+    tree := merge !tree new_t
+
+  let run_global ?(argv=Sys.argv) ?(out=Format.std_formatter) () =
+    let st, specs = arg () in
+    let no_anon _ = raise(Arg.Bad "No anonymous arguments allowed") in
+    let pgm = try Filename.basename Sys.argv.(0)
+              with _ -> "run benchmark" in
+    let usage = pgm ^ " [options]" in
+    try
+      Arg.parse_argv argv specs no_anon usage;
+      run ~arg:st ~out !tree
+    with Arg.Bad msg ->
+      Format.fprintf out "%s@." msg
+end
+
+(* Local Variables: *)
+(* compile-command: "make -k" *)
+(* End: *)

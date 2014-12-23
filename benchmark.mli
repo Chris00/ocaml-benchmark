@@ -228,3 +228,139 @@ val tabulate : ?no_parent:bool -> ?confidence:float -> samples -> unit
     @param confidence is used to determine the confidence interval for
     the Student's test.  (default: [0.95]).  *)
 
+
+
+(** {2 Benchmark Tree}
+
+    Naming benchmarks within a hierarchy that allows to run them all,
+    or filter them so that only a subset is run.  *)
+
+module Tree : sig
+  type t
+  (** A (possibly empty) tree of benchmarks.  Individual benchmarks
+      (i.e., calls to {!throughputN}, {!latencyN}, etc. wrapped with
+      {!(>:)}) can appear at any node of the tree.  The edges are
+      annotated with strings, and paths (see {!path}) are used to
+      select subtrees.  *)
+
+  val ( @> ) : string -> samples Lazy.t -> t
+  (** [name @> bench] returns a (named) node of the benchmark tree.
+      If evaluated, it simply returns samples (for instance using
+      {!throughputN}).  If the name contains dots, it is interpreted
+      as a path.  For examle ["a.b" @> bench] is equivalent to ["a" @>>
+      "b" @> bench].
+
+      Example (the lazy thunk is used to hide initialization code):
+
+      {[
+        Benchmark.Tree.(
+          "sort" >: lazy
+            (let a = Array.init 1_000_000 (fun i -> i) in
+             Benchmark.throughput1 18 (Array.sort compare) a
+            )
+        ) ;;
+      ]} *)
+
+  val ( @>> ) : string -> t -> t
+  (** [name >:: tree] makes [tree] accessible through the given
+      [name], i.e., prefix all paths in the tree by [name].  It has no
+      effect if [name = ""].  If the name contains dots, it is
+      interpreted as a path.  For instance ["n1.n2" @>> tree] is
+      equivalent to ["n1" @>> "n2" @>> tree] and adds the path
+      [[n1;n2]] as a prefix to the tree.
+
+      @raise Invalid_argument is the name is invalid.  At least names
+      corresponding to OCaml identifiers are valid.  *)
+
+  val concat : t list -> t
+  (** Merge the given trees (recursively). Merging proceeds by taking the union
+      of all path heads in the list, and, for each such string [x],
+      merging recursively all subtrees reachable under [x].
+
+      For instance merging the trees [a.{b, c}], [a.b.d] and [{a.d, foo}]
+      will give the tree [{a.(b, b.d, c, d}, d}].  *)
+
+  val ( @>>> ) : string -> t list -> t
+  (** [name @>>> l] is equivalent to [name >:: concat l]. It names a list of
+      trees, and is useful to build lists of benchmarks related to some
+      common topic.  If the name contains dots, it is interpreted
+      as a path.
+
+      @raise Invalid_argument is the name is invalid.  At least names
+      corresponding to OCaml identifiers are valid.  *)
+
+  val with_int : (int -> t) -> int list -> t
+  (** [with_int f l] parametrize trees with several integer values
+      (e.g. a size).  The tree [f i] is prefixed with the label [i].  *)
+
+  val print : Format.formatter -> t -> unit
+  (** Print the tree of benchmarks (its structure) on the given formatter.
+      Useful in combination with the [path] argument of {!run} *)
+
+  (** {2 Path} *)
+
+  type path = string list
+  (** A path in a tree, pointing at a subtree. *)
+
+  val print_path : Format.formatter -> path -> unit
+
+  val parse_path : string -> path
+  (** Split a string into a path at the "." separators.
+    Example: [parse_path "a.b.c"] returns [["a"; "b"; "c"]]. *)
+
+  val prefix : path -> t -> t
+  (** Add the path as a prefix to the tree, similar to repeated
+      calls to [>::]. *)
+
+  val filter : path -> t -> t
+  (** [filter p t] return the tree obtained by keeping all the paths
+      in [t] that match the path [p].
+      Empty components [""] in the middle of the path are ignored.
+      Empty components [""] at the end of the path return only the
+      benchmarks at that level (i.e., one discards the benchmarks
+      pointed by paths of which [p] is a strict prefix).
+      The special path component ["*"] selects all subtrees at that
+      level (it acts as a wildcard).  *)
+
+
+  (** {2 Running} *)
+
+  type arg_state
+
+  val arg : unit -> arg_state * (Arg.key * Arg.spec * Arg.doc) list
+  (** [arg ()] returns [(arg, specs)] where [arg] is a state coming
+      from parsing the command line using [specs].  The options are:
+      - "--path" or "-p" to add a sub-tree of benchmarks
+      - "--tree" to print the tree of benchmarks.
+      Note that the default state runs all benchmarks.  You need to
+      use something like [Arg.parse (specs @ more_specs) ...] to make
+      the above arguments available to the program user.  *)
+
+  val run : ?arg: arg_state -> ?paths: path list ->  ?out: Format.formatter ->
+            t -> unit
+  (** [run t] runs all benchmarks of [t] and print the results to [fmt].
+      @param paths if provided, only the sub-trees corresponding to
+        these path is executed.  Default: execute everything.
+      @param out The formatter on which to print the output.
+        Default: [Format.std_formatter].
+      @param arg use the result of the command line parsing to direct
+        the run.  Default: run all paths in [path] *)
+
+
+  (** {2 Global Registration} *)
+
+  val global : unit -> t
+  (** Global tree, built from calls to {!register}.  It is useful
+      to centralize all benchmarks at one place to, then, run them all *)
+
+  val register : t -> unit
+  (** Register a benchmark to the global registry of benchmarks. *)
+
+  val run_global :
+    ?argv:string array ->
+    ?out:Format.formatter ->
+    unit -> unit
+  (** Same as {!run} on the global tree of benchmarks and parsing the
+      command line arguments from [argv] (which is [Sys.argv] by
+      default). *)
+end
