@@ -756,22 +756,34 @@ module Tree = struct
 
   (** {2 Run} *)
 
-  let run_bench_path fmt rev_path = function
-    | None -> ()
-    | Some b ->
-       Format.pp_print_string fmt "***********************************\
-                                   ***********************************";
-       Format.pp_print_newline fmt ();
-       Format.fprintf fmt "Run benchmarks for path \"%a\"@\n@."
-                      print_path (List.rev rev_path);
-       benches_iter b ~f:(fun b -> tabulate (Lazy.force b))
+  let print_sep fmt =
+    Format.pp_print_string fmt "***********************************\
+                                ***********************************";
+    Format.pp_print_newline fmt ()
 
-  let rec run_all fmt rev_path (Tree(b, m)) =
-    run_bench_path fmt rev_path b;
-    SMap.iter (fun name t -> run_all fmt (name :: rev_path) t) m
+  let run_bench_path fmt is_previous_output rev_path = function
+    | None -> is_previous_output
+    | Some b ->
+       if is_previous_output then print_sep fmt;
+       Format.fprintf fmt "*** Run benchmarks for path \"%a\"@\n@."
+                      print_path (List.rev rev_path);
+       benches_iter b ~f:(fun b -> tabulate (Lazy.force b));
+       true
+
+  let rec run_all fmt is_previous_output rev_path (Tree(b, m)) =
+    let is_previous_output =
+      run_bench_path fmt is_previous_output rev_path b in
+    SMap.fold (fun name t is_out -> run_all fmt is_out (name :: rev_path) t)
+              m is_previous_output
 
   let run ?(path=[]) ?(out=Format.std_formatter) t =
-    run_all out [] (select path t)
+    let is_out = run_all out false (List.rev path) (select path t) in
+    if not is_out then
+      match path with
+      | [] -> Format.fprintf out "No benchmark to run.@\n@."
+      | _ -> Format.fprintf out "No benchmark to run for path \"";
+            print_path out path;
+            Format.fprintf out "\".@\n@."
 
   let run_main ?(argv=Sys.argv) ?(out=Format.std_formatter) t =
     let path = ref [] in
@@ -787,7 +799,6 @@ module Tree = struct
       if !do_print_tree
         then Format.fprintf out "@[%a@]@." print t
         else (
-          Format.printf "run on path \"%a\"@." print_path !path;
           run ~path:!path ~out t   (* regular path *)
         )
     with Arg.Help msg ->
