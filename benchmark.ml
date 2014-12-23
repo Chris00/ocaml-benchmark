@@ -779,36 +779,39 @@ module Tree = struct
   let run1 fmt t is_previous_output path =
     run_all fmt is_previous_output (List.rev path) (select path t)
 
-  let run ?(paths=[]) ?(out=Format.std_formatter) t =
-    let is_out = List.fold_left (run1 out t) false paths in
+  let run_paths fmt ~paths t =
+    let is_out = List.fold_left (run1 fmt t) false paths in
     if not is_out then
       match paths with
-      | [] -> Format.fprintf out "No benchmark to run.@\n@."
+      | [] -> Format.fprintf fmt "No benchmark to run.@\n@."
       | p0 :: tl ->
-         Format.fprintf out "No benchmark to run for paths ";
-         print_path out p0;
-         List.iter (fun p -> print_path out p;
-                          Format.pp_print_string out ", ") tl;
-         Format.fprintf out ".@\n@."
+         Format.fprintf fmt "No benchmark to run for paths ";
+         print_path fmt p0;
+         List.iter (fun p -> print_path fmt p;
+                          Format.pp_print_string fmt ", ") tl;
+         Format.fprintf fmt ".@\n@."
 
-  let run_main ?(argv=Sys.argv) ?(out=Format.std_formatter) t =
-    let paths = ref [] in
-    let do_print_tree = ref false in
-    let add_path s = paths := parse_path s :: !paths in
+  type arg_state = { mutable paths : path list;
+                     mutable print_tree : bool;
+                   }
+  let arg () =
+    let st = { paths = [];  print_tree = false } in
+    let add_path s = st.paths <- parse_path s :: st.paths in
     let options =
       [ "--path", Arg.String add_path, " only apply to subpath"
       ; "-p", Arg.String add_path, " short option for --path"
-      ; "--tree", Arg.Set do_print_tree, " print the tree"
+      ; "--tree", Arg.Unit (fun () -> st.print_tree <- true), " print the tree"
       ] in
-    try
-      Arg.parse_argv argv options (fun _ -> ()) "run benchmarks [options]";
-      if !do_print_tree
-        then Format.fprintf out "@[%a@]@." print t
-        else (
-          run ~paths:(List.rev !paths) ~out t
-        )
-    with Arg.Help msg ->
-      Format.pp_print_string out msg
+    st, options
+
+  let run ?arg ?(paths=[]) ?(out=Format.std_formatter) t =
+    match arg with
+    | None -> run_paths out ~paths t
+    | Some st ->
+      if st.print_tree then
+        Format.fprintf out "@[%a@]@." print t
+      else
+        run_paths out ~paths:(paths @ List.rev st.paths) t
 
   (** {2 Global Registration} *)
 
@@ -820,8 +823,17 @@ module Tree = struct
   let register new_t =
     tree := merge !tree new_t
 
-  let run_global ?argv ?out () =
-    run_main ?argv ?out !tree
+  let run_global ?(argv=Sys.argv) ?(out=Format.std_formatter) () =
+    let st, specs = arg () in
+    let no_anon _ = raise(Arg.Bad "No anonymous arguments allowed") in
+    let pgm = try Filename.basename Sys.argv.(0)
+              with _ -> "run benchmark" in
+    let usage = pgm ^ " [options]" in
+    try
+      Arg.parse_argv argv specs no_anon usage;
+      run ~arg:st ~out !tree
+    with Arg.Bad msg ->
+      Format.fprintf out "%s@." msg
 end
 
 (* Local Variables: *)

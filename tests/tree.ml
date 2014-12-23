@@ -1,24 +1,22 @@
-module T = Benchmark.Tree
+let () =
+  let open Benchmark.Tree in
+  "" @> lazy (let create() = Array.init 1_000_000 (fun i -> i) in
+              Benchmark.latency1 18L create () )
+  |> register;
 
-let t0 =
-  T.("" @> lazy (let create() = Array.init 1_000_000 (fun i -> i) in
-                 Benchmark.latency1 18L create () ))
-let t1 =
-  T.("map"
-     @> lazy (let a = Array.init 1_000_000 (fun i -> i) in
-              let f x = x + 1 in
-              Benchmark.latency1 18L (Array.map f) a ))
+  "map" @> lazy (let a = Array.init 1_000_000 (fun i -> i) in
+                 let f x = x + 1 in
+                 Benchmark.latency1 18L (Array.map f) a )
+  |> register;
 
-let t2 =
-  T.("sort"
-     @> lazy (let a = Array.init 1_000_000 (fun i -> -i) in
-              Benchmark.latency1 18L (Array.sort compare) a ))
+  "sort"
+  @> lazy (let a = Array.init 1_000_000 (fun i -> -i) in
+           Benchmark.latency1 18L (Array.sort compare) a )
+ |> register;
 
-let t3 =
-  T.("sort" @>> "add"
-     @> lazy (Benchmark.latency1 18L (fun x -> x + 1) 1))
-
-let t = T.concat [t0; t1; t2; t3]
+  "sort" @>> "add"
+  @> lazy (Benchmark.latency1 18L (fun x -> x + 1) 1)
+  |> register
 
 let () =
-  T.run_main t
+  Benchmark.Tree.run_global ()

@@ -312,21 +312,27 @@ module Tree : sig
 
   (** {2 Running} *)
 
-  val run : ?paths: path list ->  ?out: Format.formatter -> t -> unit
-  (** [run t] runs all benchmarks of [t] and print the results to [fmt].
-      @param path if provided, only the sub-tree corresponding to this path
-        is executed.
-      @param out The formatter on which to print the output.
-        Default: [Format.std_formatter].  *)
+  type arg_state
 
-  val run_main :
-    ?argv:string array ->
-    ?out:Format.formatter ->
-    t -> unit
-  (** Main function: parses the command line arguments and runs benchmarks
-      accordingly. Options are parsed to be able to:
-      - select a sub-tree of benchmarks with "-p"
-      - print the structure of the tree with "--tree" *)
+  val arg : unit -> arg_state * (Arg.key * Arg.spec * Arg.doc) list
+  (** [arg ()] returns [(arg, specs)] where [arg] is a state coming
+      from parsing the command line using [specs].  The options are:
+      - "--path" or "-p" to add a sub-tree of benchmarks
+      - "--tree" to print the tree of benchmarks.
+      Note that the default state runs all benchmarks.  You need to
+      use something like [Arg.parse (specs @ more_specs) ...] to make
+      the above arguments available to the program user.  *)
+
+  val run : ?arg: arg_state -> ?paths: path list ->  ?out: Format.formatter ->
+            t -> unit
+  (** [run t] runs all benchmarks of [t] and print the results to [fmt].
+      @param paths if provided, only the sub-trees corresponding to
+        these path is executed.  Default: execute everything.
+      @param out The formatter on which to print the output.
+        Default: [Format.std_formatter].
+      @param arg use the result of the command line parsing to direct
+        the run.  Default: run all paths in [path] *)
+
 
   (** {2 Global Registration} *)
 
@@ -341,5 +347,7 @@ module Tree : sig
     ?argv:string array ->
     ?out:Format.formatter ->
     unit -> unit
-    (** Same as {!run_main} but on the global tree of benchmarks *)
+  (** Same as {!run} on the global tree of benchmarks and parsing the
+      command line arguments from [argv] (which is [Sys.argv] by
+      default). *)
 end
