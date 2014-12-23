@@ -237,10 +237,11 @@ val tabulate : ?no_parent:bool -> ?confidence:float -> samples -> unit
 
 module Tree : sig
   type t
-  (** A tree of benchmarks.  Leaves are individual benchmarks (calls
-      to {!throughputN}, {!latencyN}, etc. wrapped
-      with {!(>:)}), nodes are annotated with strings,
-      and paths (see {!path}) are used to select subtrees. *)
+  (** A (possibly empty) tree of benchmarks.  Individual benchmarks
+      (i.e., calls to {!throughputN}, {!latencyN}, etc. wrapped with
+      {!(>:)}) can appear at any node of the tree.  The edges are
+      annotated with strings, and paths (see {!path}) are used to
+      select subtrees.  *)
 
   val ( @> ) : string -> samples Lazy.t -> t
   (** A (named) leaf of the benchmark tree. If evaluated, it simply
@@ -279,8 +280,8 @@ module Tree : sig
       common topic *)
 
   val with_int : (int -> t) -> int list -> t
-  (** Parametrize a tree with several integer values (e.g. a size)
-      @raise Invalid_argument if the list is empty *)
+  (** [with_int f l] parametrize trees with several integer values
+      (e.g. a size).  The tree [f i] is prefixed with the label [i].  *)
 
   val print : Format.formatter -> t -> unit
   (** Print the tree of benchmarks (its structure) on the given formatter.
@@ -289,7 +290,7 @@ module Tree : sig
   (** {2 Path} *)
 
   type path = string list
-  (* A path in a tree, pointing at a subtree *)
+  (** A path in a tree, pointing at a subtree. *)
 
   val print_path : Format.formatter -> path -> unit
 

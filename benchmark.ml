@@ -622,6 +622,7 @@ module Tree = struct
 
   module SMap = Map.Make(String)
 
+  (* A collection of benchmarks with fast concatenation. *)
   type benches = Single of samples Lazy.t
                | Pair of benches * benches
 
