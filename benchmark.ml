@@ -776,22 +776,28 @@ module Tree = struct
     SMap.fold (fun name t is_out -> run_all fmt is_out (name :: rev_path) t)
               m is_previous_output
 
-  let run ?(path=[]) ?(out=Format.std_formatter) t =
-    let is_out = run_all out false (List.rev path) (select path t) in
+  let run1 fmt t is_previous_output path =
+    run_all fmt is_previous_output (List.rev path) (select path t)
+
+  let run ?(paths=[]) ?(out=Format.std_formatter) t =
+    let is_out = List.fold_left (run1 out t) false paths in
     if not is_out then
-      match path with
+      match paths with
       | [] -> Format.fprintf out "No benchmark to run.@\n@."
-      | _ -> Format.fprintf out "No benchmark to run for path \"";
-            print_path out path;
-            Format.fprintf out "\".@\n@."
+      | p0 :: tl ->
+         Format.fprintf out "No benchmark to run for paths ";
+         print_path out p0;
+         List.iter (fun p -> print_path out p;
+                          Format.pp_print_string out ", ") tl;
+         Format.fprintf out ".@\n@."
 
   let run_main ?(argv=Sys.argv) ?(out=Format.std_formatter) t =
-    let path = ref [] in
+    let paths = ref [] in
     let do_print_tree = ref false in
-    let set_path_ s = path := parse_path s in
+    let add_path s = paths := parse_path s :: !paths in
     let options =
-      [ "--path", Arg.String set_path_, " only apply to subpath"
-      ; "-p", Arg.String set_path_, " equivalent to --path"
+      [ "--path", Arg.String add_path, " only apply to subpath"
+      ; "-p", Arg.String add_path, " short option for --path"
       ; "--tree", Arg.Set do_print_tree, " print the tree"
       ] in
     try
@@ -799,7 +805,7 @@ module Tree = struct
       if !do_print_tree
         then Format.fprintf out "@[%a@]@." print t
         else (
-          run ~path:!path ~out t   (* regular path *)
+          run ~paths:(List.rev !paths) ~out t
         )
     with Arg.Help msg ->
       Format.pp_print_string out msg

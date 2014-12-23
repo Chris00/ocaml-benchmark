@@ -312,7 +312,7 @@ module Tree : sig
 
   (** {2 Running} *)
 
-  val run : ?path:path ->  ?out: Format.formatter -> t -> unit
+  val run : ?paths: path list ->  ?out: Format.formatter -> t -> unit
   (** [run t] runs all benchmarks of [t] and print the results to [fmt].
       @param path if provided, only the sub-tree corresponding to this path
         is executed.
