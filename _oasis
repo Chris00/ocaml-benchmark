@@ -1,7 +1,7 @@
 #                                                               -*-conf-*-
 OASISFormat: 0.4
 Name:        benchmark
-Version:     1.3.1
+Version:     1.4
 Synopsis:    Benchmark running times of code.
 Authors:     Christophe Troestler <Christophe.Troestler@umons.ac.be>
 Maintainers: Christophe Troestler <Christophe.Troestler@umons.ac.be>
