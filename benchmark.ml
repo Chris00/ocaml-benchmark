@@ -831,7 +831,7 @@ module Tree = struct
   let arg () =
     let st = { paths = [];  print_tree = false } in
     let add_path s = st.paths <- parse_path s :: st.paths in
-    let options =
+    let options = Arg.align
       [ "--path", Arg.String add_path, " only apply to subpath"
       ; "-p", Arg.String add_path, " short option for --path"
       ; "--tree", Arg.Unit (fun () -> st.print_tree <- true), " print the tree"
@@ -866,7 +866,7 @@ module Tree = struct
     try
       Arg.parse_argv argv specs no_anon usage;
       run ~arg:st ~out !tree
-    with Arg.Bad msg ->
+    with Arg.Bad msg | Arg.Help msg ->
       Format.fprintf out "%s@." msg
 end
 
