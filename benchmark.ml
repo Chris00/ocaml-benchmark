@@ -834,6 +834,8 @@ module Tree = struct
     let options = Arg.align
       [ "--path", Arg.String add_path, " only apply to subpath"
       ; "-p", Arg.String add_path, " short option for --path"
+      ; "--all", Arg.Unit (fun () -> add_path "*"), " run all paths"
+      ; "-a", Arg.Unit (fun () -> add_path "*"), " short option for --all"
       ; "--tree", Arg.Unit (fun () -> st.print_tree <- true), " print the tree"
       ] in
     st, options
