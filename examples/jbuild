@@ -1,0 +1,12 @@
+(jbuild_version 1)
+
+(executables
+ ((names     (ar_ba composition iter let_try loops
+              match_array numbers regexps try_if func_record))
+  (libraries (benchmark bigarray str pcre))))
+
+
+(alias
+ ((name examples)
+  (deps (ar_ba.exe composition.exe iter.exe let_try.exe loops.exe
+         match_array.exe numbers.exe regexps.exe try_if.exe func_record.exe))))

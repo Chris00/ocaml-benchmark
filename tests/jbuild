@@ -1,0 +1,20 @@
+(jbuild_version 1)
+
+(executables
+ ((names     (long_run tree))
+  (libraries (benchmark unix))))
+
+
+(alias
+ ((name tests)
+  (deps (long_run.exe tree.exe))))
+
+(alias
+ ((name runtest)
+  (deps (long_run.exe))
+  (action (run ${<}))))
+
+(alias
+ ((name runtest)
+  (deps (tree.exe))
+  (action (run ${<}))))
