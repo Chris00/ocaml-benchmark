@@ -1,3 +1,4 @@
+[![Build Status](https://travis-ci.org/Chris00/ocaml-benchmark.svg?branch=master)](https://travis-ci.org/Chris00/ocaml-benchmark)
 
 Benchmark — measure/compare run-time of OCaml functions
 =======================================================
