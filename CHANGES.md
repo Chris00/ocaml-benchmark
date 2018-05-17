@@ -1,7 +1,9 @@
 1.5 2018-05-17
 --------------
 
-- Port to Dune/Jbuilder.
+- Port to Dune/Jbuilder and Topkg.
+- Add option `--all` to the `Tree.arg`.
+- Fix uncaught exception in `Tree.run_global`.
 
 
 
