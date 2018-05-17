@@ -330,8 +330,9 @@ module Tree : sig
   val arg : unit -> arg_state * (Arg.key * Arg.spec * Arg.doc) list
   (** [arg ()] returns [(arg, specs)] where [arg] is a state coming
       from parsing the command line using [specs].  The options are:
-      - "--path" or "-p" to add a sub-tree of benchmarks
-      - "--tree" to print the tree of benchmarks.
+      - "--path" or "-p" to add a sub-tree of benchmarks;
+      - "--tree" to print the tree of benchmarks;
+      - "--all" or "-a" to run all paths in the tree.
       Note that the default state runs all benchmarks.  You need to
       use something like [Arg.parse (specs @ more_specs) ...] to make
       the above arguments available to the program user.  *)
