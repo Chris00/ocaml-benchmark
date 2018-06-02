@@ -15,7 +15,5 @@ build: [
 depends: [
   "jbuilder" {build}
   "base-unix"
-  "base-bigarray" {test}
-  "pcre" {test}
 ]
 available: [ ocaml-version >= "3.12.0" ]
