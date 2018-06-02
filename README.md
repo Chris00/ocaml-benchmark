@@ -1,4 +1,5 @@
 [![Build Status](https://travis-ci.org/Chris00/ocaml-benchmark.svg?branch=master)](https://travis-ci.org/Chris00/ocaml-benchmark)
+[![Build status](https://ci.appveyor.com/api/projects/status/jeyp56227sniv3vo?svg=true)](https://ci.appveyor.com/project/Chris00/ocaml-benchmark)
 
 Benchmark — measure/compare run-time of OCaml functions
 =======================================================
@@ -20,7 +21,7 @@ for installation instructions.
 
 
 
-Copyright 2004-present, Christophe Troestler
+Copyright 2004-present, Christophe Troestler  
 Copyright 2002-2003, Doug Bagley
 
 
