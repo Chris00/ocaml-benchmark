@@ -2,6 +2,7 @@
 --------------
 
 - Port to Dune (not the former Jbuilder) and dune-release.
+- Fix some typos in the documentation.
 
 1.5 2018-05-17
 --------------
