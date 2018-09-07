@@ -641,29 +641,24 @@ module Tree = struct
      assert (parse_path "foo" = ["foo"]);
      assert (parse_path "" = [""])
   *)
-  let rev_parse_path check_name s =
+  let rev_parse_path s =
     let l = ref [] in
     let i0 = ref 0 in
     for i = 0 to String.length s - 1 do
       if String.unsafe_get s i = '.' then (
         let name = String.sub s !i0 (i - !i0) in
-        check_name name;
         l := name :: !l;
         i0 := i + 1;
       )
     done;
     let name = if !i0 = 0 then s
                else String.sub s !i0 (String.length s - !i0) in
-    check_name name;
     name :: !l
 
-  let check_reserved name =
+  let[@inline] check_reserved name =
     if name = "*" then invalid_arg "Name \"*\" is reserved for wildcard"
 
-  let check_nothing _ = ()
-
-  let parse_path s =
-    List.rev(rev_parse_path check_nothing s)
+  let parse_path s = List.rev(rev_parse_path s)
 
 
   (** {2 Bench Tree} *)
@@ -709,7 +704,7 @@ module Tree = struct
   let concat l = List.fold_left merge empty l
 
   let check_allowed_name n =
-    if n = "*" then invalid_arg "Name \"*\" is reserved for wildcard";
+    check_reserved n;
     for i = 0 to String.length n - 1 do
       if String.unsafe_get n i = '.' then
         invalid_arg "Names cannot contain dots"
@@ -720,17 +715,16 @@ module Tree = struct
   let name_nonempty t n = Tree(None, SMap.singleton n t)
 
   let name t n =
-    (* Assume the name [n] is valid *)
+    check_allowed_name n;
     if n = "" then t else name_nonempty t n
 
   (* prefix a tree with a path. Now the whole tree is only reachable
      from this given path *)
   let prefix path t =
-    List.fold_right (fun n t -> check_reserved n; name t n) path t
+    List.fold_right (fun n t -> name t n) path t
 
   let ( @>> ) n t =
-    let path = rev_parse_path check_reserved n in
-    List.fold_left name t path
+    List.fold_left name t (rev_parse_path n)
 
   let ( @> ) name bench = name @>> (of_bench bench)
 
