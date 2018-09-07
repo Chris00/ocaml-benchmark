@@ -152,10 +152,10 @@ let runloop n_iters n f x =
   while tbase = (!t0).utime do t0 := make 0L done;
   (* Loop over function we are timing [n] times (looping on int64
      quantities takes too long, this is why we use composite loops). *)
-  for i = 1 to n1 do
-    for j = 0 to max_int do ignore(f x) done; (* [max_iter] runs *)
+  for _ = 1 to n1 do
+    for _ = 0 to max_int do ignore(f x) done; (* [max_iter] runs *)
   done;
-  for i = 1 to n0 do ignore(f x) done;
+  for _ = 1 to n0 do ignore(f x) done;
   let t1 = make n_iters in
   pos_sub t1 !t0
 
@@ -186,7 +186,7 @@ let print_run out ?(min_count=4L) ?(min_cpu=0.4) ~style ?fwidth ?fdigits b =
 
 
 let latency n out ?min_count ?min_cpu ~style ?fwidth ?fdigits
-    ~repeat name f x =
+    ~repeat _name f x =
   let rec loop nrep acc =
     if nrep < 1 then acc
     else (
@@ -203,7 +203,7 @@ let latency n out ?min_count ?min_cpu ~style ?fwidth ?fdigits
    [estimate_niter] estimate by linear interpolation the number of
    iter to run [> tmin] and then the test is performed. *)
 let throughput tmin out ?min_count ?min_cpu ~style ?fwidth ?fdigits
-    ~repeat name f x =
+    ~repeat _name f x =
   (* Run [f] for [niter] times and complete with >= [nmin] iterations
      (estimated by linear interpolation) to run >= [tmin]. *)
   let rec run_test nmin niter bm_init total_wall =
@@ -320,7 +320,7 @@ let testN ~test default_f_name  ?min_count ?min_cpu ~style
     (name, bm) in
   List.map result_of funs
 
-let rec string_of_names funs =
+let string_of_names funs =
   String.concat ", " (List.map (fun (a,_,_) -> sprintf "%S" a) funs)
 
 
@@ -405,7 +405,7 @@ let log_gamma =
     log(sqrt2pi *. sum c_last xg 0.) +. (x -. 0.5) *. log xg_5 -. xg_5
 
 (* Beta function.  It is assumed [a > 0. && b > 0.]. *)
-let beta a b =
+let _beta a b =
   assert(a > 0. && b > 0.);
   exp(log_gamma a +. log_gamma b -. log_gamma(a +. b))
 
@@ -572,7 +572,7 @@ let tabulate ?(no_parent=false) ?(confidence=0.95) results =
     col_width.(1) <- max (String.length ra) col_width.(1);
     col_width.(2) <- max (String.length ra_err) col_width.(2);
     (* Columns 3..(len + 2): performance ratios *)
-    let make_col j (col_name, col_n, col_rate, col_s) =
+    let make_col j (_col_name, col_n, col_rate, col_s) =
       let ratio =
         if i = j || is_nan row_rate || is_nan col_rate then "--" else
           let p = 100. *. row_rate /. col_rate -. 100. in

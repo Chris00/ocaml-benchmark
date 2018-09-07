@@ -13,7 +13,7 @@ open Benchmark
 let bigdata =
   let size = 500000 in
   let buf = Buffer.create size in
-  for i = 1 to size/10 - 1 do Buffer.add_string buf "012345678 " done;
+  for _ = 1 to size/10 - 1 do Buffer.add_string buf "012345678 " done;
   Buffer.add_string buf "0123456789";
   Buffer.contents buf
 

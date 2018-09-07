@@ -1,3 +1,8 @@
+1.6 2018-09-07
+--------------
+
+- Port to Dune (not the former Jbuilder) and dune-release.
+
 1.5 2018-05-17
 --------------
 

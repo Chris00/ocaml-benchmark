@@ -24,7 +24,7 @@ let g a =
 open Benchmark
 
 let () =
-  let a = Array.init 1000 (fun i -> Random.int 2 - 1) in
+  let a = Array.init 1000 (fun _ -> Random.int 2 - 1) in
   let res = throughputN ~repeat:5 1 [("Some", f, a);
-				     ("()->", g, a); ] in
+                                     ("()->", g, a); ] in
   tabulate res

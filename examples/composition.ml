@@ -12,7 +12,6 @@ let splice l i j = fun k ->
 
 
 open Benchmark
-open Printf
 
 let ncomp = 400 (* Number of compositions *)
 

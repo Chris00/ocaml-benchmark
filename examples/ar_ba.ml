@@ -32,7 +32,7 @@ let ba_alloc () =
   let a = Array1.create float64 c_layout n in
   Array1.fill a 1.;
   let s = ref 0. in
-  for j = 1 to m do
+  for _ = 1 to m do
     for i = 0 to n-1 do s := !s +. a.{i} done
   done
 
@@ -40,7 +40,7 @@ let set_ba (a: vec) = for i = 0 to n-1 do a.{i} <- 1. done
 
 let set_ba_alloc () =
   let a = Array1.create float64 c_layout n in
-  for j = 1 to m do
+  for _ = 1 to m do
     for i = 0 to n-1 do a.{i} <- 3. done
   done
 
@@ -63,7 +63,7 @@ let arr_cl () =
 let arr_alloc () =
   let b = Array.make n 1. in
   let s = ref 0. in
-  for j = 1 to m do
+  for _ = 1 to m do
     for i = 0 to n-1 do s := !s +. b.(i) done
   done
 
@@ -71,7 +71,7 @@ let set_arr (b: float array) = for i = 0 to n-1 do b.(i) <- 1. done
 
 let set_arr_alloc () =
   let a = Array.make n 0. in
-  for j = 1 to m do
+  for _ = 1 to m do
     for i = 0 to n-1 do a.(i) <- 3. done
   done
 

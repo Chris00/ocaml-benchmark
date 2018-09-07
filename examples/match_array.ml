@@ -10,7 +10,7 @@ let string_of_month1 =
   fun i -> Array.unsafe_get month i
 
 let f1 () =
-  for i = 1 to n do ignore(string_of_month1 7) done
+  for _ = 1 to n do ignore(string_of_month1 7) done
 
 let string_of_month2 = function
   | 0 -> "Jan"
@@ -28,7 +28,7 @@ let string_of_month2 = function
   | _ -> failwith "h"
 
 let f2 () =
-  for i = 1 to n do ignore(string_of_month2 7) done
+  for _ = 1 to n do ignore(string_of_month2 7) done
 
 
 open Benchmark
