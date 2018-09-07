@@ -655,7 +655,7 @@ module Tree = struct
                else String.sub s !i0 (String.length s - !i0) in
     name :: !l
 
-  let[@inline] check_reserved name =
+  let check_reserved name =
     if name = "*" then invalid_arg "Name \"*\" is reserved for wildcard"
 
   let parse_path s = List.rev(rev_parse_path s)
