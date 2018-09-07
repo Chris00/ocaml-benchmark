@@ -21,12 +21,12 @@ Very old changes
 * benchmark.ml: Code mostly rewritten to improve clarity (and to
   correct some bugs).  Allows to return multiple times for a given
   test.  Student's statistical test to determine whether two rates
-  are significantly different (see [log_gamma], [betai],
-  [cpl_student_t], [comp_rates] and [different_rates]).
+  are significantly different (see `log_gamma`, `betai`,
+  `cpl_student_t`, `comp_rates` and `different_rates`).
 
 * benchmark.mli: The documentation is greatly improved.  Functions
-  [make], [add], [sub] instead of [create], [sum], [diff] for
-  uniformness with the OCaml standard library.
+  `make`, `add`, `sub` instead of `create`, `sum`, `diff` for
+  uniformity with the OCaml standard library.
 
 2004-08-18  Troestler Christophe  <chris_77@users.sourceforge.net>
 
