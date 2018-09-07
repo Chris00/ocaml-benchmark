@@ -15,8 +15,20 @@ The easier way to install it is by using opam:
 
     opam install benchmark
 
-If you want to perform this operation manually, see `benchmark.opam`
-for installation instructions.
+If you use the development version of this project, install [Dune][]
+and issue
+
+    make
+    make install
+
+[Dune]: https://github.com/ocaml/dune
+
+
+Documentation
+-------------
+
+See the [interface of `Benchmark`](src/benchmark.mli).  It can also be
+read in [HTML](https://chris00.github.io/ocaml-benchmark/doc/).
 
 
 
