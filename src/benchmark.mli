@@ -262,7 +262,7 @@ module Tree : sig
       ]} *)
 
   val ( @>> ) : string -> t -> t
-  (** [name >:: tree] makes [tree] accessible through the given
+  (** [name @>> tree] makes [tree] accessible through the given
       [name], i.e., prefix all paths in the tree by [name].  It has no
       effect if [name = ""].  If the name contains dots, it is
       interpreted as a path.  For instance ["n1.n2" @>> tree] is
@@ -281,7 +281,7 @@ module Tree : sig
       will give the tree [{a.(b, b.d, c, d}, d}].  *)
 
   val ( @>>> ) : string -> t list -> t
-  (** [name @>>> l] is equivalent to [name >:: concat l]. It names a list of
+  (** [name @>>> l] is equivalent to [name @>> concat l]. It names a list of
       trees, and is useful to build lists of benchmarks related to some
       common topic.  If the name contains dots, it is interpreted
       as a path.
@@ -310,7 +310,7 @@ module Tree : sig
 
   val prefix : path -> t -> t
   (** Add the path as a prefix to the tree, similar to repeated
-      calls to [>::]. *)
+      calls to [@>>]. *)
 
   val filter : path -> t -> t
   (** [filter p t] return the tree obtained by keeping all the paths
