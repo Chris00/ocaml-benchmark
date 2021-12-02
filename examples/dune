@@ -2,7 +2,7 @@
 (executables
  (names ar_ba composition iter let_try loops
         match_array numbers regexps try_if func_record)
- (libraries benchmark bigarray str pcre))
+ (libraries benchmark bigarray str re))
 
 (alias
  (name examples)

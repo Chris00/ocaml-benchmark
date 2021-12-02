@@ -1,3 +1,4 @@
+module Pcre = Re.Pcre
 open Printf
 open Benchmark
 

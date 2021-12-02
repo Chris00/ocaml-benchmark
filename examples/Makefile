@@ -20,7 +20,7 @@ all: byte opt native
 byte: $(EXAMPLES:.ml=.exe)
 opt native:  $(EXAMPLES:.ml=.com)
 
-regexps.exe regexps.com: REQUIRES += pcre
+regexps.exe regexps.com: REQUIRES += re
 
 %.exe: %.ml ../benchmark.cma
 	$(OCAMLC) -o $@ $(ALL_OPTS) -linkpkg $(BENCHMARK) $<
