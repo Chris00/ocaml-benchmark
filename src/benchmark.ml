@@ -668,7 +668,7 @@ let print_gc  (results:( _ * t list) list) : unit =
   let major_rates = List.map (compute_per_iter get_major) results in
 
   (* Compute rows *)
-  let top_row = ["" ; " minor allocs/iter" ; " major allocs/iter"; ] in
+  let top_row = ["" ; " minor_allocs/iter" ; " major_allocs/iter"; ] in
   let rows = top_row :: List.map2 (fun (name, minor) (_, major) ->
     [name; string_of_bytes minor; string_of_bytes major]) minor_rates major_rates
   in
