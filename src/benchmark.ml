@@ -34,29 +34,42 @@ type t = {
      as machines run faster, a number of iterations ~ 2^29 is no
      longer enough (2^29 is the largest > 0 power of 2 that [int] can
      hold on a 32 bits platform. *)
+  minor_words: float;
+  major_words: float;
+  promoted_words: float;
 }
 
 type style = No_child | No_parent | All | Auto | Nil
 
 let null_t =
-  { wall = 0.; utime = 0.; stime = 0.; cutime = 0.; cstime = 0.; iters = 0L }
+  { wall = 0.; utime = 0.; stime = 0.; cutime = 0.; cstime = 0.; iters = 0L;
+    minor_words = 0.; major_words = 0.; promoted_words = 0.; }
 
 let make n =
+  let minor_words, promoted_words, major_words = Gc.counters() in
   let tms = Unix.times() in
   { wall = Unix.gettimeofday();
     utime = tms.Unix.tms_utime;   stime = tms.Unix.tms_stime;
     cutime = tms.Unix.tms_cutime; cstime = tms.Unix.tms_cstime;
-    iters = n }
+    iters = n; minor_words; major_words; promoted_words; }
 
 let add a b =
   { wall = a.wall +. b.wall;       utime = a.utime +. b.utime;
     stime = a.stime +. b.stime;    cutime = a.cutime +. b.cutime;
-    cstime = a.cstime +. b.cstime; iters = Int64.add a.iters b.iters }
+    cstime = a.cstime +. b.cstime; iters = Int64.add a.iters b.iters;
+    minor_words = a.minor_words +. b.minor_words;
+    major_words = a.major_words +. b.major_words;
+    promoted_words = a.promoted_words +. b.promoted_words;
+  }
 
 let sub a b =
   { wall = a.wall -. b.wall;       utime = a.utime -. b.utime;
     stime = a.stime -. b.stime;    cutime = a.cutime -. b.cutime;
-    cstime = a.cstime -. b.cstime; iters = Int64.sub a.iters b.iters }
+    cstime = a.cstime -. b.cstime; iters = Int64.sub a.iters b.iters;
+    minor_words = a.minor_words -. b.minor_words;
+    major_words = a.major_words -. b.major_words;
+    promoted_words = a.promoted_words -. b.promoted_words;
+  }
 
 (* It may happen that, because of slight variations, the running time
    of a fast running test is less than the running time of the null
@@ -66,17 +79,26 @@ let ( -- ) a b = if (a:float) > b then a -. b else 0.
 let pos_sub a b =
   { wall = a.wall -- b.wall;       utime = a.utime -- b.utime;
     stime = a.stime -- b.stime;    cutime = a.cutime -- b.cutime;
-    cstime = a.cstime -- b.cstime; iters = Int64.sub a.iters b.iters }
+    cstime = a.cstime -- b.cstime; iters = Int64.sub a.iters b.iters;
+    minor_words = a.minor_words -- b.minor_words;
+    major_words = a.major_words -- b.major_words;
+    promoted_words = a.promoted_words -- b.promoted_words;
+  }
 
 
 let cpu_process b = b.utime +. b.stime
 let cpu_childs b = b.cutime +. b.cstime
 let cpu_all b = b.utime +. b.stime +. b.cutime +. b.cstime
 
+let string_of_bytes b =
+  if b >= 1e6 then sprintf "%.2f MB" (b /. 1e6)
+  else if b >= 1e3 then sprintf "%.2f kB" (b /. 1e3)
+  else sprintf "%.0f B" b
+
 (* Return a formatted representation of benchmark structure according
    to [style].  Default values for presentation parameters are set
    here. *)
-let to_string ?(style=Auto) ?(fwidth=5) ?(fdigits=2) b =
+let to_string ?(style=Auto) ?(fwidth=5) ?(fdigits=2) (b:t) : string =
   let pt = cpu_process b
   and ct = cpu_childs b in
   let style =
@@ -89,15 +111,23 @@ let to_string ?(style=Auto) ?(fwidth=5) ?(fdigits=2) b =
   let f x = sprintf "%*.*f" fwidth fdigits x in
   match style with
   | All ->
-      sprintf "%s WALL (%s usr %s sys + %s cusr %s csys = %s CPU)%s"
+      sprintf "%s WALL (%s usr %s sys + %s cusr %s csys = %s CPU, minor = %s, major = %s)%s"
         (f b.wall) (f b.utime) (f b.stime) (f b.cutime) (f b.cstime)
-        (f(pt +. ct)) (iter_info pt)
+        (f(pt +. ct))
+        (string_of_bytes b.minor_words)
+        (string_of_bytes (b.major_words -. b.promoted_words))
+        (iter_info pt)
   | No_child ->
-      sprintf "%s WALL (%s usr + %s sys = %s CPU)%s"
-        (f b.wall) (f b.utime) (f b.stime) (f pt) (iter_info pt)
+      sprintf "%s WALL (%s usr + %s sys = %s CPU, minor = %s, major = %s)%s"
+        (f b.wall) (f b.utime) (f b.stime) (f pt)
+        (string_of_bytes b.minor_words)
+        (string_of_bytes (b.major_words -. b.promoted_words)) (iter_info pt)
   | No_parent ->
-      sprintf "%s WALL (%s cusr + %s csys = %s CPU)%s"
-        (f b.wall) (f b.cutime) (f b.cstime) (f ct) (iter_info ct)
+      sprintf "%s WALL (%s cusr + %s csys = %s CPU, minor = %s, major = %s)%s"
+        (f b.wall) (f b.cutime) (f b.cstime) (f ct)
+        (string_of_bytes b.minor_words)
+        (string_of_bytes (b.major_words -. b.promoted_words))
+        (iter_info ct)
   | Nil -> ""
   | Auto -> assert false
 
@@ -112,7 +142,6 @@ let rec string_of_time t =
 
 (* The time [t >= 0] is rounded to the nearest integer: *)
 let string_of_time t = string_of_time(truncate(t +. 0.5))
-
 
 type samples = (string * t list) list
 
@@ -203,7 +232,7 @@ let latency n out ?min_count ?min_cpu ~style ?fwidth ?fdigits
    [estimate_niter] estimate by linear interpolation the number of
    iter to run [> tmin] and then the test is performed. *)
 let throughput tmin out ?min_count ?min_cpu ~style ?fwidth ?fdigits
-    ~repeat _name f x =
+    ~repeat _name f x : t list =
   (* Run [f] for [niter] times and complete with >= [nmin] iterations
      (estimated by linear interpolation) to run >= [tmin]. *)
   let rec run_test nmin niter bm_init total_wall =
@@ -524,7 +553,7 @@ let different_rates significance  n1 r1 s1  n2 r2 s2 =
 (* [string_of_rate display_as_rate confidence n r s] *)
 let string_of_rate display_as_rate =
   let per_sec = if display_as_rate then "/s" else "" in
-  fun confidence n r s ->
+  fun confidence n r s : (string * string) ->
     (* Assume Gaussian distribution *)
     let sigma = sqrt(s/. float n) in
     let err = confidence *. sigma (* FIXME *) in
@@ -541,10 +570,13 @@ let string_of_rate display_as_rate =
     else if sigma < 1e-15 then (sprintf " %g%s" a per_sec, "")
     else (sprintf " %g+-" a, sprintf "%g%s" err per_sec)
 
+let get_minor b = b.minor_words
+let get_major b = b.major_words -. b.promoted_words
 
 (* print results of a bench_many run *)
 (* results = [(name, bm); (name, bm); (name, bm); ...] *)
-let tabulate ?(no_parent=false) ?(confidence=0.95) results =
+let tabulate ?(no_parent=false) ?(confidence=0.95) 
+    (results:( _ * t list) list) : unit =
   if confidence < 0. || confidence > 1. then
     invalid_arg "Benchmark.tabulate: confidence < 0. or > 1.";
   let len = List.length results in
@@ -608,6 +640,44 @@ let tabulate ?(no_parent=false) ?(confidence=0.95) results =
   (*
    * Display the table
    *)
+  let row_formatter row =
+    list_iteri (fun i d -> printf "%*s" col_width.(i) d) row;
+    print_string "\n" in
+  row_formatter top_row;
+  List.iter row_formatter rows;
+  flush stdout
+
+let print_gc  (results:( _ * t list) list) : unit =
+  let len = List.length results in
+  if len = 0 then invalid_arg "Benchmark.print_gc: empty list of results";
+
+  let compute_per_iter get (name, samples) : string * float =
+    let rec loop n sum = function
+      | [] -> n, sum
+      | b :: tl ->
+        let n = Int64.(add n b.iters) in
+        let sum = sum +. get b in
+        loop n sum tl in
+    let n, sum = loop 0L 0. samples in
+    if n=0L then name, 0.
+    else name, sum /. (Int64.to_float n)
+  in
+
+  (* Compute (name, rate, sigma) for all results *)
+  let minor_rates = List.map (compute_per_iter get_minor) results in
+  let major_rates = List.map (compute_per_iter get_major) results in
+
+  (* Compute rows *)
+  let top_row = ["" ; " minor allocs/iter" ; " major allocs/iter"; ] in
+  let rows = top_row :: List.map2 (fun (name, minor) (_, major) ->
+    [name; string_of_bytes minor; string_of_bytes major]) minor_rates major_rates
+  in
+
+  (* Initialize the widths of the columns from the top row *)
+  let col_width = Array.of_list (List.map String.length top_row) in
+  List.iter (List.iteri (fun i col ->
+    col_width.(i) <- max col_width.(i) (String.length col))) rows;
+
   let row_formatter row =
     list_iteri (fun i d -> printf "%*s" col_width.(i) d) row;
     print_string "\n" in
@@ -787,28 +857,33 @@ module Tree = struct
                                 ***********************************";
     Format.pp_print_newline fmt ()
 
-  let run_bench_path fmt is_previous_output rev_path = function
+  let run_bench_path ~with_gc fmt is_previous_output rev_path = function
     | None -> is_previous_output
     | Some b ->
        if is_previous_output then print_sep fmt;
        Format.fprintf fmt "*** Run benchmarks for path \"%a\"@\n@."
                       print_path (List.rev rev_path);
-       benches_iter b ~f:(fun b -> tabulate (Lazy.force b));
+       benches_iter b ~f:(fun b ->
+        let b = Lazy.force b in
+        tabulate b;
+        if with_gc then print_gc b);
        true
 
-  let rec run_all fmt is_previous_output rev_path (Tree(b, m)) =
+  let rec run_all ~with_gc fmt is_previous_output rev_path (Tree(b, m)) =
     let is_previous_output =
-      run_bench_path fmt is_previous_output rev_path b in
-    SMap.fold (fun name t is_out -> run_all fmt is_out (name :: rev_path) t)
-              m is_previous_output
+      run_bench_path ~with_gc fmt is_previous_output rev_path b in
+    SMap.fold
+      (fun name t is_out ->
+        run_all ~with_gc fmt is_out (name :: rev_path) t)
+      m is_previous_output
 
   let run_1path fmt t is_previous_output path =
     (* Filtering the tree keep its full paths so we initialize
        [rev_path] to [[]]. *)
     run_all fmt is_previous_output [] (filter path t)
 
-  let run_paths fmt ~paths t =
-    let is_out = List.fold_left (run_1path fmt t) false paths in
+  let run_paths ~with_gc fmt ~paths t =
+    let is_out = List.fold_left (run_1path ~with_gc fmt t) false paths in
     if not is_out then
       match paths with
       | [] -> Format.fprintf fmt "No benchmark to run.@\n@."
@@ -821,9 +896,10 @@ module Tree = struct
 
   type arg_state = { mutable paths : path list;
                      mutable print_tree : bool;
+                     mutable with_gc: bool;
                    }
   let arg () =
-    let st = { paths = [];  print_tree = false } in
+    let st = { paths = [];  print_tree = false; with_gc = true } in
     let add_path s = st.paths <- parse_path s :: st.paths in
     let options = Arg.align
       [ "--path", Arg.String add_path, " only apply to subpath"
@@ -831,17 +907,19 @@ module Tree = struct
       ; "--all", Arg.Unit (fun () -> add_path "*"), " run all paths"
       ; "-a", Arg.Unit (fun () -> add_path "*"), " short option for --all"
       ; "--tree", Arg.Unit (fun () -> st.print_tree <- true), " print the tree"
+      ; "--gc", Arg.Unit (fun () -> st.with_gc <- true), " print GC stats"
+      ; "--no-gc", Arg.Unit (fun () -> st.with_gc <- false), " do not print GC stats"
       ] in
     st, options
 
-  let run ?arg ?(paths=[]) ?(out=Format.std_formatter) t =
+  let run ?(with_gc=true) ?arg ?(paths=[]) ?(out=Format.std_formatter) t =
     match arg with
-    | None -> run_paths out ~paths t
+    | None -> run_paths ~with_gc out ~paths t
     | Some st ->
       if st.print_tree then
         Format.fprintf out "@[%a@]@." print t
       else
-        run_paths out ~paths:(paths @ List.rev st.paths) t
+        run_paths ~with_gc:st.with_gc out ~paths:(paths @ List.rev st.paths) t
 
   (** {2 Global Registration} *)
 
