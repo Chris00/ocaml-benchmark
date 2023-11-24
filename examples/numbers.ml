@@ -32,7 +32,8 @@ let () =
 
   (* let's exercise the *1 functions: *)
   let _ = latency1 ~name:"int-1-lat" 1000L f_int 10000 in
-  let _ = throughput1 ~name:"int-1-thru" 5 f_int 10000 in
+  let s = throughput1 ~name:"int-1-thru" 5 f_int 10000 in
+  print_gc s;
   print_newline ();
 
   (* now let's exercise the *N functions: *)
@@ -42,6 +43,7 @@ let () =
                ("int64", f_int64, 10000); ] in
   print_newline ();
   tabulate res;
+  print_gc res;
 
   print_newline ();
   let res = latencyN 2000L [("int",   f_int,   10000);
