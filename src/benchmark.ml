@@ -168,6 +168,7 @@ let max_iter = Int64.add (Int64.of_int max_int) 1L
    0L] times [f] with the argument [x].  The structure returned
    declare [n_iter] iterations. *)
 let runloop n_iters n f x =
+  Gc.minor();
   let n' = Int64.div n max_iter in
   if n' >= max_iter then
     invalid_arg "Benchmark.runloop: number of iterations too large";
@@ -219,7 +220,9 @@ let latency n out ?min_count ?min_cpu ~style ?fwidth ?fdigits
   let rec loop nrep acc =
     if nrep < 1 then acc
     else (
+      Gc.full_major();
       Gc.compact(); (* Reclaim memory to avoid undue GC during the test. *)
+      Gc.minor();
       let bm, _ = timeit n f x in
       print_run out ?min_count ?min_cpu ~style ?fwidth ?fdigits bm;
       loop (nrep - 1) (bm :: acc)
@@ -251,7 +254,9 @@ let throughput tmin out ?min_count ?min_cpu ~style ?fwidth ?fdigits
   (* Repeat the test [nrep] times and return the list of results. *)
   let rec repeat_test nrep acc nmin niter wall_estim =
     if nrep < 1 then acc else (
+      Gc.full_major();
       Gc.compact(); (* Reclaim memory to avoid undue GC during the test. *)
+      Gc.minor();
       let bm, wall = run_test nmin niter null_t 0. in
       let wall_estim =
         if wall > wall_estim +. 60. then (
