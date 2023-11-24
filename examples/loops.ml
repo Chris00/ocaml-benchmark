@@ -31,4 +31,5 @@ let () =
               [("rec", rec_loop, a);
                ("rec2", rec_loop2, a);
                ("for", for_loop, a); ] in
-  tabulate res
+  tabulate res;
+  print_gc res
