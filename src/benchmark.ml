@@ -45,8 +45,13 @@ let null_t =
   { wall = 0.; utime = 0.; stime = 0.; cutime = 0.; cstime = 0.; iters = 0L;
     minor_words = 0.; major_words = 0.; promoted_words = 0.; }
 
+let bytes_per_word = float (Sys.word_size / 8)
+
 let make n =
   let minor_words, promoted_words, major_words = Gc.counters() in
+  let minor_words = minor_words *. bytes_per_word in
+  let major_words = major_words *. bytes_per_word in
+  let promoted_words = promoted_words *. bytes_per_word in
   let tms = Unix.times() in
   { wall = Unix.gettimeofday();
     utime = tms.Unix.tms_utime;   stime = tms.Unix.tms_stime;
@@ -168,7 +173,6 @@ let max_iter = Int64.add (Int64.of_int max_int) 1L
    0L] times [f] with the argument [x].  The structure returned
    declare [n_iter] iterations. *)
 let runloop n_iters n f x =
-  Gc.minor();
   let n' = Int64.div n max_iter in
   if n' >= max_iter then
     invalid_arg "Benchmark.runloop: number of iterations too large";
@@ -222,7 +226,6 @@ let latency n out ?min_count ?min_cpu ~style ?fwidth ?fdigits
     else (
       Gc.full_major();
       Gc.compact(); (* Reclaim memory to avoid undue GC during the test. *)
-      Gc.minor();
       let bm, _ = timeit n f x in
       print_run out ?min_count ?min_cpu ~style ?fwidth ?fdigits bm;
       loop (nrep - 1) (bm :: acc)
@@ -256,7 +259,6 @@ let throughput tmin out ?min_count ?min_cpu ~style ?fwidth ?fdigits
     if nrep < 1 then acc else (
       Gc.full_major();
       Gc.compact(); (* Reclaim memory to avoid undue GC during the test. *)
-      Gc.minor();
       let bm, wall = run_test nmin niter null_t 0. in
       let wall_estim =
         if wall > wall_estim +. 60. then (
