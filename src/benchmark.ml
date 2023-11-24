@@ -577,9 +577,6 @@ let string_of_rate display_as_rate =
     else if sigma < 1e-15 then (sprintf " %g%s" a per_sec, "")
     else (sprintf " %g+-" a, sprintf "%g%s" err per_sec)
 
-let get_minor b = b.minor_words
-let get_major b = b.major_words -. b.promoted_words
-
 (* print results of a bench_many run *)
 (* results = [(name, bm); (name, bm); (name, bm); ...] *)
 let tabulate ?(no_parent=false) ?(confidence=0.95) 
@@ -654,6 +651,10 @@ let tabulate ?(no_parent=false) ?(confidence=0.95)
   List.iter row_formatter rows;
   flush stdout
 
+let get_minor b = b.minor_words
+let get_major b = b.major_words -. b.promoted_words
+let get_promoted b = b.promoted_words
+
 let print_gc  (results:( _ * t list) list) : unit =
   let len = List.length results in
   if len = 0 then invalid_arg "Benchmark.print_gc: empty list of results";
@@ -673,11 +674,15 @@ let print_gc  (results:( _ * t list) list) : unit =
   (* Compute (name, rate, sigma) for all results *)
   let minor_rates = List.map (compute_per_iter get_minor) results in
   let major_rates = List.map (compute_per_iter get_major) results in
+  let promoted_rates = List.map (compute_per_iter get_promoted) results in
 
   (* Compute rows *)
-  let top_row = ["" ; " minor_allocs/iter" ; " major_allocs/iter"; ] in
-  let rows = List.map2 (fun (name, minor) (_, major) ->
-    [name; string_of_bytes minor; string_of_bytes major]) minor_rates major_rates
+  let top_row = ["" ; " minor_allocs/iter" ; " major_allocs/iter"; " promoted/iter" ] in
+  let rows =
+    List.map2
+      (fun (name, minor) ((_, major), (_, promoted)) ->
+        [name; string_of_bytes minor; string_of_bytes major; string_of_bytes promoted])
+      minor_rates (List.combine major_rates promoted_rates)
   in
 
   (* Initialize the widths of the columns from the top row *)
