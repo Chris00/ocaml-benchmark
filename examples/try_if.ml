@@ -31,4 +31,5 @@ let () =
                                      ("try", f1, ());
                                      ("if", f2, ())  ] in
   print_endline "Bigarray bound checking:";
-  tabulate res
+  tabulate res;
+  print_gc res

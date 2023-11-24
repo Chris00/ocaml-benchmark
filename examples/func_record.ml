@@ -32,7 +32,8 @@ let () =
      ("no arg", (fun () -> h 1.), ());
     ] in
   print_endline "Functor vesus records vesus passing as arg:";
-  tabulate res
+  tabulate res;
+  print_gc res
 
 (* Local Variables: *)
 (* compile-command: "make -k -C .." *)

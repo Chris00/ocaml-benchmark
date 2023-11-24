@@ -99,6 +99,7 @@ let () =
     ] in
   print_endline "Sum of elements or set all elements to 3.:";
   tabulate res;
+  print_gc res;
 
   let res = throughputN ~repeat:3 3
     [("ba", ba_alloc, ());
@@ -108,3 +109,4 @@ let () =
     ] in
   print_endline "With allocation:";
   tabulate res;
+  print_gc res

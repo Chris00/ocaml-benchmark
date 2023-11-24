@@ -45,4 +45,5 @@ let () =
 
   let res = throughputN ~repeat:3 5 [("fun", do_f, ());
                                      ("vec", do_v, ()) ] in
-  tabulate res
+  tabulate res;
+  print_gc res
