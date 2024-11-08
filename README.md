@@ -1,5 +1,4 @@
-[![Build Status](https://travis-ci.org/Chris00/ocaml-benchmark.svg?branch=master)](https://travis-ci.org/Chris00/ocaml-benchmark)
-[![Build status](https://ci.appveyor.com/api/projects/status/jeyp56227sniv3vo?svg=true)](https://ci.appveyor.com/project/Chris00/ocaml-benchmark)
+[![Build and Test](https://github.com/Chris00/ocaml-benchmark/actions/workflows/main.yml/badge.svg)](https://github.com/Chris00/ocaml-benchmark/actions/workflows/main.yml)
 
 Benchmark — measure/compare run-time of OCaml functions
 =======================================================
