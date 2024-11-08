@@ -1,0 +1,32 @@
+name: github pages
+
+on:
+  push:
+    branches:
+      - master # Set a branch name to trigger deployment
+
+jobs:
+  deploy:
+    name: Deploy doc
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@main
+
+      - name: Use OCaml
+        uses: ocaml/setup-ocaml@v2
+        with:
+          ocaml-compiler: '5.2'
+          dune-cache: true
+          allow-prerelease-opam: true
+
+      - run: opam install odig benchmark
+
+      - run: opam exec -- odig odoc --cache-dir=_doc/ benchmark
+
+      - name: Deploy
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./_doc/html
+          destination_dir: .
+          enable_jekyll: false
