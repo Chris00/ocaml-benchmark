@@ -62,6 +62,9 @@ type t = {
   cutime : float; (** Child process User CPU time (in seconds) *)
   cstime : float; (** Child process System CPU time (in seconds) *)
   iters : Int64.t;  (** Number of iterations. *)
+  minor_words: float; (** Bytes allocated on minor heap *)
+  major_words: float; (** Bytes allocated on major heap, incl. promoted *)
+  promoted_words: float; (** Bytes moved from minor heap to major heap *)
 }
 
 (** Style of the output. *)
@@ -228,7 +231,8 @@ val tabulate : ?no_parent:bool -> ?confidence:float -> samples -> unit
     @param confidence is used to determine the confidence interval for
     the Student's test.  (default: [0.95]).  *)
 
-
+val print_gc : samples -> unit
+(** Print GC statistics. *)
 
 (** {2 Benchmark Tree}
 
@@ -337,9 +341,11 @@ module Tree : sig
       use something like [Arg.parse (specs @ more_specs) ...] to make
       the above arguments available to the program user.  *)
 
-  val run : ?arg: arg_state -> ?paths: path list ->  ?out: Format.formatter ->
+  val run : ?with_gc:bool ->
+            ?arg: arg_state -> ?paths: path list ->  ?out: Format.formatter ->
             t -> unit
   (** [run t] runs all benchmarks of [t] and print the results to [fmt].
+      @param with_gc if true, will print GC statistics as well (Default: true)
       @param paths if provided, only the sub-trees corresponding to
         these path is executed.  Default: execute everything.
       @param out The formatter on which to print the output.

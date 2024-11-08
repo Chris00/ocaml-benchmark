@@ -36,5 +36,6 @@ open Benchmark
 let () =
   let res = throughputN 3 ~repeat:5 [ ("arr", f1, ());
 				      ("pat", f2, ()); ] in
-  tabulate res
+  tabulate res;
+  print_gc res
 
