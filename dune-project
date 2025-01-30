@@ -2,7 +2,9 @@
 (generate_opam_files true)
 
 (name benchmark)
-(version 1.6)
+(version 1.7)
+(homepage "https://github.com/Chris00/ocaml-benchmark")
+(source (github Chris00/ocaml-benchmark))
 (license "LGPL-3.0 with OCaml linking exception")
 (maintainers "Christophe Troestler <Christophe.Troestler@umons.ac.be>")
 (authors "Christophe Troestler <Christophe.Troestler@umons.ac.be>"
@@ -15,6 +17,6 @@
 your functions and to easily compare the results.  A statistical test
 is used to determine whether the results truly differ.")
   (depends
-    (ocaml (>= 3.12))
+    (ocaml (>= 4.03))
     base-unix
-    dune))
+    (dune (>= 2.0))))
