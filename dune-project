@@ -2,7 +2,9 @@
 (generate_opam_files true)
 
 (name benchmark)
-(version 1.6)
+(version 1.7)
+(homepage "https://github.com/Chris00/ocaml-benchmark")
+(source (github Chris00/ocaml-benchmark))
 (license "LGPL-3.0 with OCaml linking exception")
 (maintainers "Christophe Troestler <Christophe.Troestler@umons.ac.be>")
 (authors "Christophe Troestler <Christophe.Troestler@umons.ac.be>"
