@@ -1,5 +1,5 @@
 (executables
- (names     long_run tree)
+ (names long_run tree)
  (libraries benchmark unix))
 
 (alias
@@ -9,6 +9,7 @@
 (rule
  (alias runtest)
  (deps long_run.exe tree.exe)
- (action (progn
-          (run %{dep:long_run.exe})
-          (run %{dep:tree.exe}))))
+ (action
+  (progn
+   (run %{dep:long_run.exe})
+   (run %{dep:tree.exe}))))

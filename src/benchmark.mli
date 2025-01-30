@@ -51,44 +51,43 @@
     print_endline (Benchmark.to_string b)                       ]}
  *)
 
-
 (** {2 Timing and samples structures} *)
 
-(** The information returned by timing tests. *)
 type t = {
-  wall : float;   (** Wallclock time (in seconds) *)
-  utime : float;  (** This process User CPU time (in seconds) *)
-  stime : float;  (** This process System CPU time (in seconds) *)
-  cutime : float; (** Child process User CPU time (in seconds) *)
-  cstime : float; (** Child process System CPU time (in seconds) *)
-  iters : Int64.t;  (** Number of iterations. *)
-  minor_words: float; (** Bytes allocated on minor heap *)
-  major_words: float; (** Bytes allocated on major heap, incl. promoted *)
-  promoted_words: float; (** Bytes moved from minor heap to major heap *)
+  wall: float;  (** Wallclock time (in seconds) *)
+  utime: float;  (** This process User CPU time (in seconds) *)
+  stime: float;  (** This process System CPU time (in seconds) *)
+  cutime: float;  (** Child process User CPU time (in seconds) *)
+  cstime: float;  (** Child process System CPU time (in seconds) *)
+  iters: Int64.t;  (** Number of iterations. *)
+  minor_words: float;  (** Bytes allocated on minor heap *)
+  major_words: float;  (** Bytes allocated on major heap, incl. promoted *)
+  promoted_words: float;  (** Bytes moved from minor heap to major heap *)
 }
+(** The information returned by timing tests. *)
 
 (** Style of the output. *)
 type style =
-  | No_child    (** Do not print child CPU times *)
-  | No_parent   (** Do not print parent CPU times *)
-  | All         (** Print parent and child CPU times *)
-  | Auto        (** Same as [No_child] unless there is child CPU used *)
-  | Nil         (** Print nothing *)
+  | No_child  (** Do not print child CPU times *)
+  | No_parent  (** Do not print parent CPU times *)
+  | All  (** Print parent and child CPU times *)
+  | Auto  (** Same as [No_child] unless there is child CPU used *)
+  | Nil  (** Print nothing *)
 
 val make : Int64.t -> t
-  (** [Benchmark.make n] create a new {!Benchmark.t} structure with
+(** [Benchmark.make n] create a new {!Benchmark.t} structure with
       current time values and [n] iterations.  Only the integer part of
       [n] is used, the fractional part is ignored. *)
 
 val add : t -> t -> t
-  (** [Benchmark.add b1 b2] add {!Benchmark.t} structure [b1] to [b2]. *)
+(** [Benchmark.add b1 b2] add {!Benchmark.t} structure [b1] to [b2]. *)
 
 val sub : t -> t -> t
-  (** [Benchmark.sub b1 b2] subtract {!Benchmark.t} structure [b2]
+(** [Benchmark.sub b1 b2] subtract {!Benchmark.t} structure [b2]
     from [b1]. *)
 
 val to_string : ?style:style -> ?fwidth:int -> ?fdigits:int -> t -> string
-  (** [Benchmark.to_string ?style ?fwidth ?fdigits b] converts the
+(** [Benchmark.to_string ?style ?fwidth ?fdigits b] converts the
     {!Benchmark.t} structure to a formatted string.
 
     @param style printing style (default: [Auto])
@@ -97,14 +96,13 @@ val to_string : ?style:style -> ?fwidth:int -> ?fdigits:int -> t -> string
   *)
 
 type samples = (string * t list) list
-  (** Association list that links the names of the tests to the list
+(** Association list that links the names of the tests to the list
     of their timings. *)
 
 val merge : samples -> samples -> samples
-  (** [merge l1 l2] merges the two association lists of timings [l1]
+(** [merge l1 l2] merges the two association lists of timings [l1]
     and [l2] into a single one, concatenating the timings for the same
     names of [l1] and [l2]. *)
-
 
 (** {2 Timing functions} *)
 
@@ -114,8 +112,10 @@ val throughputN :
   ?fwidth:int ->
   ?fdigits:int ->
   ?repeat:int ->
-  int -> (string * ('a -> 'b) * 'a) list -> samples
-  (** [Benchmark.throughputN ?min_count ?style ?fwidth ?fdigits t
+  int ->
+  (string * ('a -> 'b) * 'a) list ->
+  samples
+(** [Benchmark.throughputN ?min_count ?style ?fwidth ?fdigits t
       funs] runs each function in list [funs] for at least [t > 0]
       seconds.  The list [funs] has the structure: [[(name1, f1, x1);
       (name2, f2, x2); ...]], where [name1] is the name to label the
@@ -153,8 +153,12 @@ val throughput1 :
   ?fwidth:int ->
   ?fdigits:int ->
   ?repeat:int ->
-  int -> ?name:string -> ('a -> 'b) -> 'a -> samples
-  (** [Benchmark.throughput1 ?min_count ?style ?fwidth ?fdigits t ?name f x]
+  int ->
+  ?name:string ->
+  ('a -> 'b) ->
+  'a ->
+  samples
+(** [Benchmark.throughput1 ?min_count ?style ?fwidth ?fdigits t ?name f x]
     runs one function [f] with input [x] for at least [t] seconds, and
     returns the result, which is also printed unless [~style] is
     [Nil].  See {!Benchmark.throughputN} for more information.  *)
@@ -165,8 +169,10 @@ val latencyN :
   ?fwidth:int ->
   ?fdigits:int ->
   ?repeat:int ->
-  Int64.t -> (string * ('a -> 'b) * 'a) list -> samples
-  (** [Benchmark.latencyN ?min_cpu ?style ?fwidth ?fdigits n funs]
+  Int64.t ->
+  (string * ('a -> 'b) * 'a) list ->
+  samples
+(** [Benchmark.latencyN ?min_cpu ?style ?fwidth ?fdigits n funs]
       runs each function in list [funs] for [n] iterations.  [n] must be
       at least 4.  The list [funs] has the structure: [[(name1, f1, x1);
       (name2, f2, x2); ...]], where [name1] is the name to label the
@@ -196,15 +202,18 @@ val latency1 :
   ?fwidth:int ->
   ?fdigits:int ->
   ?repeat:int ->
-  Int64.t -> ?name:string -> ('a -> 'b) -> 'a -> samples
-  (** [Benchmark.latency1 ?min_cpu ?style ?fwidth ?fdigits n ?name f x]
+  Int64.t ->
+  ?name:string ->
+  ('a -> 'b) ->
+  'a ->
+  samples
+(** [Benchmark.latency1 ?min_cpu ?style ?fwidth ?fdigits n ?name f x]
       runs the function [f] with input [x] for [n] iterations, and
       returns the results, which are also printed unless [~style] is
       [Nil].  See {!Benchmark.latencyN} for more information. *)
 
-
 val tabulate : ?no_parent:bool -> ?confidence:float -> samples -> unit
-  (** [Benchmark.tablulate results] prints a comparison table for a
+(** [Benchmark.tablulate results] prints a comparison table for a
     list of [results] obtained by {!Benchmark.latencyN} or
     {!Benchmark.throughputN} with each function compared to all the
     others.  The table is of the type
@@ -326,7 +335,6 @@ module Tree : sig
       The special path component ["*"] selects all subtrees at that
       level (it acts as a wildcard).  *)
 
-
   (** {2 Running} *)
 
   type arg_state
@@ -341,9 +349,13 @@ module Tree : sig
       use something like [Arg.parse (specs @ more_specs) ...] to make
       the above arguments available to the program user.  *)
 
-  val run : ?with_gc:bool ->
-            ?arg: arg_state -> ?paths: path list ->  ?out: Format.formatter ->
-            t -> unit
+  val run :
+    ?with_gc:bool ->
+    ?arg:arg_state ->
+    ?paths:path list ->
+    ?out:Format.formatter ->
+    t ->
+    unit
   (** [run t] runs all benchmarks of [t] and print the results to [fmt].
       @param with_gc if true, will print GC statistics as well (Default: true)
       @param paths if provided, only the sub-trees corresponding to
@@ -352,7 +364,6 @@ module Tree : sig
         Default: [Format.std_formatter].
       @param arg use the result of the command line parsing to direct
         the run.  Default: run all paths in [path] *)
-
 
   (** {2 Global Registration} *)
 
@@ -363,10 +374,7 @@ module Tree : sig
   val register : t -> unit
   (** Register a benchmark to the global registry of benchmarks. *)
 
-  val run_global :
-    ?argv:string array ->
-    ?out:Format.formatter ->
-    unit -> unit
+  val run_global : ?argv:string array -> ?out:Format.formatter -> unit -> unit
   (** Same as {!run} on the global tree of benchmarks and parsing the
       command line arguments from [argv] (which is [Sys.argv] by
       default). *)
