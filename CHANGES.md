@@ -1,3 +1,11 @@
+
+1.7 2025-01-29
+--------------
+
+- move to dune 2.0
+- collect and display GC statistics
+- use Re.Pcre instead of pcre in example
+
 1.6 2018-09-07
 --------------
 

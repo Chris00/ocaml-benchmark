@@ -19,6 +19,9 @@ doc:
 lint:
 	opam lint benchmark.opam
 
+format:
+	dune fmt --auto-promote
+
 clean:
 	dune clean
 

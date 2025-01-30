@@ -1,6 +1,5 @@
-
 (library
- (name        benchmark)
+ (name benchmark)
  (public_name benchmark)
- (libraries   unix)
+ (libraries unix)
  (synopsis "Benchmark running times of code"))

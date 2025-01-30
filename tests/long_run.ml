@@ -12,5 +12,5 @@ let long () =
   done
 
 let () =
-  let t = throughputN 1 ["long", long, ()] in
+  let t = throughputN 1 [ "long", long, () ] in
   tabulate t

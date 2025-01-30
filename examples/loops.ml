@@ -5,19 +5,21 @@ open Benchmark
 
 let rec_loop (a : float array) =
   let rec loop i =
-    if i < Array.length a then begin
+    if i < Array.length a then (
       a.(i) <- a.(i) +. 1.;
       loop (i + 1)
-    end in
+    )
+  in
   loop 0
 
 let rec_loop2 (a : float array) =
   let len = Array.length a in
   let rec loop i =
-    if i < len then begin
+    if i < len then (
       a.(i) <- a.(i) +. 1.;
       loop (i + 1)
-    end in
+    )
+  in
   loop 0
 
 let for_loop (a : float array) =
@@ -27,9 +29,9 @@ let for_loop (a : float array) =
 
 let () =
   let a = Array.make 100 1. in
-  let res = throughputN ~repeat:5 1
-              [("rec", rec_loop, a);
-               ("rec2", rec_loop2, a);
-               ("for", for_loop, a); ] in
+  let res =
+    throughputN ~repeat:5 1
+      [ "rec", rec_loop, a; "rec2", rec_loop2, a; "for", for_loop, a ]
+  in
   tabulate res;
   print_gc res
