@@ -6,8 +6,8 @@
  (name tests)
  (deps long_run.exe tree.exe))
 
-(alias
- (name runtest)
+(rule
+ (alias runtest)
  (deps long_run.exe tree.exe)
  (action (progn
           (run %{dep:long_run.exe})
